@@ -1,0 +1,20 @@
+# Packaged skill artifacts
+*.skill
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python (if you add eval scripts later)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/

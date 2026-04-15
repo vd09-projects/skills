@@ -1,0 +1,5 @@
+# Excluded directories
+solution-reviewer/
+
+# macOS
+.DS_Store
