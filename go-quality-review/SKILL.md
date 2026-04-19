@@ -90,6 +90,16 @@ Severity levels:
 
 End with a summary: total findings by severity, overall assessment, and whether the code is merge-ready at the requested review level.
 
+**Step 6 — Write quality-gate sentinel (on pass)**
+
+If the review concludes with no blocker-level findings, record the pass so the Stop and PreToolUse hooks can verify the gate was run:
+
+```bash
+mkdir -p .quality-gate && date -u +"%Y-%m-%dT%H:%M:%SZ" > .quality-gate/last-pass
+```
+
+Run this command via the Bash tool immediately after delivering the review report. Do not run it if there are any blocker findings — the gate is only stamped when the code is clean. Add one line to the review summary confirming whether the sentinel was written or skipped.
+
 ---
 
 ## Adding new dimensions
