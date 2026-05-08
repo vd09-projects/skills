@@ -1,6 +1,8 @@
-# Decision Format Specification
+# Inline Decision Mark Format Specification
 
-This file is the canonical specification for the inline decision-marking format used by `algo-trading-lead-dev` (Priya). It is also intended to be honored by other producers in the same project — `algo-trading-veteran` (Marcus), code reviewers, and any future skills that make decisions worth recording — so that all decisions in a conversation can be harvested by a single extractor at the end.
+This file is the canonical specification for the inline decision-marking format used by any skill that records decisions worth preserving. It is intended to be honored by all producer skills in a project — Go developers, quant researchers, code reviewers, infrastructure designers, security analysts, or any future skills that make decisions worth recording — so that all decisions in a conversation can be harvested by a single extractor at end of conversation.
+
+This skill (`decision-journal`) implements the canonical extractor via Harvest mode (see `SKILL.md`). Other skills may produce marks in this format without needing the journal installed; the marks are valuable as inline annotations regardless.
 
 The format is **versioned from day one**. The current version is `2026-04.1.0`. Older entries with older version labels coexist with newer ones; extractors read both. This document defines version `2026-04.1.0` only; future versions will get their own document or appended sections here.
 
@@ -10,13 +12,14 @@ The format is **versioned from day one**. The current version is `2026-04.1.0`. 
 
 When a non-trivial decision is made mid-conversation — a structural choice, a library pick, a tradeoff between two reasonable options — the *reasoning* behind the call is only available at the moment it's made. By the time someone reads the diff three months later, the reasoning is gone. The git log shows what changed; it doesn't show why this option was picked over the alternatives that were also on the table.
 
-The decision-journal skill exists to preserve this reasoning. The harvest model that works best in practice is: producers (Priya, Marcus, reviewers) mark their decisions inline in their normal prose responses, and the journal extracts them at the end of the conversation. This way:
+The harvest model that works best in practice is: producers mark their decisions inline in their normal prose responses, and a journal (or any other consumer) extracts them at the end of the conversation. This way:
 
 - The reasoning is captured at the moment of decision, not reconstructed later.
 - The user sees the decisions inline as they're made — no separate file to open.
 - Multiple producers honor one format, so the journal has a single extraction pattern instead of per-skill logic.
-- Adding a new producer (a security skill, a perf skill) requires no changes to the journal, the format, or any other producer.
+- Adding a new producer requires no changes to the journal, the format, or any other producer.
 - The format itself can evolve without breaking old entries, because every entry carries its version.
+- Marks remain valuable annotations even without a journal harvesting them.
 
 ---
 
@@ -29,6 +32,7 @@ A decision block looks like this:
 scope: engine/accounting
 tags: money, types, decimal
 supersedes: 2026-04-08-money-as-float64
+owner: priya
 
 All money values use `shopspring/decimal`; `float64` is reserved for statistics 
 and indicators. The compile-time split between the two types also enforces the 
@@ -50,9 +54,9 @@ It has three parts: the lead-in line, the optional metadata block, and the prose
 - **`**Decision`** — literal. The opening anchor that extractors regex on.
 - **`(<version>)`** — the format version. Currently `2026-04.1.0`. Required, so old extractors can recognize whether they understand the entry.
 - **`—`** — em dash literal. Separator between the version and the category-status.
-- **`<category>`** — one of the categories defined by the project's decision journal. For Priya: `convention`, `architecture`, `tradeoff`. For Marcus: `algorithm`. For reviewers: typically `convention` or `architecture`. Categories are configured by the journal, not hardcoded by this format.
+- **`<category>`** — one of the categories defined by the project's decision journal. Common categories: `convention`, `architecture`, `tradeoff`, `algorithm`, `library-choice`, `infrastructure`, `performance`. Producers may use any category; categories not in the journal's config are accepted by Harvest mode and a subdirectory is created on demand.
 - **`:`** — literal colon. The category-status separator.
-- **`<status>`** — one of the statuses defined by the journal. For Priya's own decisions, the default is `experimental`. For ratified decisions: `accepted`. For rejected proposals: `rejected`. For decisions being replaced: `superseded`. For decisions to revisit later: `revisit-later`. Status vocabulary is configured by the journal.
+- **`<status>`** — one of the statuses defined by the journal. Common statuses: `experimental` (live but not ratified), `accepted` (ratified), `rejected` (proposed but not adopted), `superseded` (replaced by a newer decision), `revisit-later` (deferred). Status vocabulary is configured by the journal.
 
 The lead-in is the **only stable contract** across all future format evolution. As long as the regex `\*\*Decision \(\d{4}-\d{2}\.\d+\.\d+\) — [^:]+: [^*]+\*\*` matches, an extractor can find the entry. Everything inside the block can change shape over years and the find-the-decisions step keeps working.
 
@@ -64,6 +68,7 @@ A series of `key: value` lines immediately after the lead-in, no indentation, no
 scope: engine/accounting
 tags: money, types, decimal
 supersedes: 2026-04-08-money-as-float64
+owner: priya
 ```
 
 Rules:
@@ -75,15 +80,15 @@ Rules:
 
 Keys the journal recognizes by default (in version 2026-04.1.0):
 
-- **`scope`** — the part of the codebase or system the decision applies to. Free text. Examples: `engine/accounting`, `internal/cv/cpcv`, `data-loading`, `repo-wide`.
+- **`scope`** — the part of the codebase or system the decision applies to. Free text. Examples: `engine/accounting`, `internal/cv/cpcv`, `data-loading`, `repo-wide`, `sizing`, `risk-management`.
 - **`tags`** — comma-separated keywords for search. Free text.
 - **`supersedes`** — slug of a previous decision this one replaces. The journal uses this to flip the previous decision's status to `superseded` and add a forward-link.
 - **`related`** — comma-separated slugs of related decisions, for cross-linking without supersession.
 - **`revisit-trigger`** — a condition under which this decision should be reconsidered. Free text; the journal's review mode surfaces decisions whose triggers might be met.
-- **`owner`** — which producer made the decision. Optional. Useful when you want to filter for "all decisions Marcus made in the last week."
+- **`owner`** — which producer made the decision. Optional but recommended. Useful when you want to filter for "all decisions Marcus made in the last week" or "everything Priya marked as a tradeoff."
 - **`ticket`** — reference to an external ticket or issue. Free text; the journal stores it without interpreting.
 
-Producer-specific keys are fine. If `algo-trading-veteran` wants to add a `hypothesis` key to algorithm-category decisions, that's allowed and the journal stores it. Other producers and other extractors ignore the key without complaint.
+Producer-specific keys are fine. If a producer wants to add a `hypothesis` key to algorithm-category decisions, that's allowed and the journal stores it. Other producers and other extractors ignore the key without complaint.
 
 ### The prose body
 
@@ -123,12 +128,13 @@ Rules:
 
 ## Examples
 
-### Convention decision with full metadata
+### Convention decision with full metadata (developer)
 
 ```
 **Decision (2026-04.1.0) — convention: experimental**
 scope: engine/accounting
 tags: money, types, decimal
+owner: priya
 
 All money values use `shopspring/decimal`; `float64` is reserved for statistics 
 and indicators. The compile-time split between the two types also enforces the 
@@ -137,6 +143,24 @@ research-versus-engine boundary.
 Alternatives considered: custom fixed-point, rejected on maintenance cost versus 
 a mature library. big.Float, rejected because it has no decimal semantics and 
 still drifts at display precision.
+```
+
+### Algorithm decision (researcher / methodology)
+
+```
+**Decision (2026-04.1.0) — algorithm: experimental**
+scope: sizing
+tags: kelly, drawdown, risk
+owner: marcus
+
+Half-Kelly with drawdown scaling: reduce position size proportionally 
+to the gap from equity high-water mark. Hard circuit breaker at 20% 
+portfolio drawdown from peak, at which point the strategy halts and 
+gets re-evaluated rather than re-tuned.
+
+Full Kelly is rejected because it assumes the win probability is known 
+exactly. It isn't. Half-Kelly captures roughly three-quarters of the 
+return at half the volatility (Thorp).
 ```
 
 ### Architecture decision with no metadata
@@ -185,15 +209,17 @@ The extractor's job is to find decision blocks in conversation text and forward 
 
 1. **Find lead-in lines** with the regex `^\*\*Decision \((\d{4}-\d{2}\.\d+\.\d+)\) — ([^:]+): ([^*]+)\*\*$` (multiline mode). This identifies every block opening and captures the version, category, and status.
 
-2. **Determine block boundaries** by scanning forward from each lead-in. The block continues until either: a line containing two consecutive blank lines, a line that starts another lead-in, or end-of-text.
+2. **Determine block boundaries** by scanning forward from each lead-in. The block continues until either: a line containing two consecutive blank lines (i.e., one blank line followed by another blank line), a line that starts another lead-in, or end-of-text.
 
 3. **Parse the metadata block** by reading lines after the lead-in until the first blank line. Each line that matches `^([a-z][a-z0-9_-]*): (.+)$` is a metadata key-value pair. Lines that don't match this pattern end the metadata block.
 
 4. **Parse the prose body** as everything after the metadata block (or after the lead-in if no metadata) up to the block boundary.
 
-5. **Check the version**. If the extractor understands the version, parse normally. If it doesn't understand the version, the extractor should still capture the raw block text and forward it to the journal with a `version-not-understood` flag, rather than dropping the decision silently. Forward compatibility matters more than strict parsing.
+5. **Check the version**. If the extractor understands the version, parse normally. If it doesn't understand the version, the extractor should still capture the raw block text and forward it with a `version-not-understood` flag, rather than dropping the decision silently. Forward compatibility matters more than strict parsing.
 
 The extractor does **not** decide whether a decision is significant, well-formed, or worth recording. Producers decide that by writing the marks in the first place. The extractor's only job is find-and-forward.
+
+This skill's Harvest mode (in `SKILL.md`) implements this extraction algorithm. The regex used by Harvest is taken from this document and is not duplicated in `SKILL.md`.
 
 ---
 
@@ -214,11 +240,13 @@ When a new version is introduced:
 3. Extractors are updated to parse both the old and new versions. They never drop entries silently.
 4. After enough time has passed that no live producer is emitting the old version, the old spec stays in this document as historical reference. It is never deleted, because old decision files in `decisions/` will reference it forever.
 
+The current `2026-04.1.0` regex is intentionally permissive within v1. Future-version handling — particularly whether the regex needs to widen for compatibility — is a v2 design concern, not a v1 implementation concern.
+
 ---
 
 ## What is *not* a decision worth marking
 
-Producers — including Priya — should not mark trivial choices. The format exists to capture reasoning that won't be recoverable from the diff; if the reasoning *is* recoverable from the diff, the mark is noise and degrades the journal's signal.
+Producers should not mark trivial choices. The format exists to capture reasoning that won't be recoverable from the diff; if the reasoning *is* recoverable from the diff, the mark is noise and degrades the journal's signal.
 
 Don't mark:
 
@@ -227,6 +255,7 @@ Don't mark:
 - Bug fixes whose reasoning is "the previous code was wrong, here's the fix." The diff and the test that catches the regression are sufficient.
 - Routine refactors that move code without changing it. The diff shows the move.
 - Configuration changes whose reasoning is "we now want X instead of Y, where Y was the previous setting." Unless there's a tradeoff being made, this is not a decision worth recording.
+- General principles being applied to a situation. Producers shouldn't mark "no edge, no trade" or "errors get wrapped with %w" because those are principles, not decisions made for this situation.
 
 Do mark:
 
@@ -235,7 +264,9 @@ Do mark:
 - Tradeoffs between two reasonable options where the loser was rejected for a specific reason.
 - Conventions being established that future code will be expected to follow.
 - Overrides of default rules (lint warnings, function length thresholds) where the override is intentional and the reason matters.
-- Algorithm choices on the methodology side (Marcus's territory).
+- Algorithm choices on the methodology side (sizing rules for *this* situation, kill-switch lines for *this* strategy, edge thesis verdicts).
 - API shapes that lock in constraints.
 
-The test, restated: **would a reasonable person ask "why did you do it this way?" in three months, and would the diff alone fail to answer them?** If yes to both, mark it. If no to either, don't.
+The test, restated: **would a reasonable person ask "why did you do it this way?" in three months, and would the diff (or the conversation alone) fail to answer them?** If yes to both, mark it. If no to either, don't.
+
+The corollary test for producers that work in judgment-and-recommendation mode (researchers, methodology consultants): **am I applying a general principle, or am I making a specific call for this situation?** Apply principles freely without marking; mark specific calls.

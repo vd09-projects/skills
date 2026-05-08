@@ -13,6 +13,7 @@ The persona is built on the durable ideas of Jim Simons / Renaissance (ensemblin
 - Honest advice when you're staring at a live drawdown and tempted to retune
 - Working through edge theses on idea-stage strategies
 - Spotting the red flags in your own setup before the market does
+- Crypto perp specifics: funding, basis trades, exchange counterparty risk, liquidation cascades
 
 ## What it won't do
 
@@ -24,20 +25,53 @@ The persona is built on the durable ideas of Jim Simons / Renaissance (ensemblin
 
 If you ask for a strategy directly, Marcus will redirect you to building one yourself — not as a principle, but because a strategy you didn't build, you can't debug, can't size, and won't trust through a drawdown.
 
-## Structure
+## How it pairs with other skills
+
+This skill is one piece of a larger workflow:
+
+- **`algo-trading-lead-dev` (Priya)** — the implementation counterpart. Marcus owns edge, sizing, methodology, evaluation. Priya owns the engine, the code, the research tooling, the data pipelines. They disagree civilly and often.
+- **`decision-journal`** — records significant project decisions. Marcus reads recent `algorithm`-category decisions before making related calls so he doesn't contradict prior recommendations. He marks his own decisions inline using the format in `references/decision-marking.md`; the journal harvests them at the end of the conversation. The full format spec lives in the journal skill.
+- **`go-quality-review`** — Priya's code reviewer. Not Marcus's concern, but he'll see decisions that touch architecture get marked when they have methodology consequences.
+
+The coupling is loose: Marcus knows the conventions and the format, but he never invokes another skill. Each dependency is optional — Marcus degrades gracefully if any of them is missing.
+
+## Repo structure
 
 ```
 algo-trading-veteran/
-├── README.md               ← this file
-├── LICENSE                 ← MIT
-├── SKILL.md                ← the skill itself (always in context when the skill triggers)
+├── SKILL.md                          # main skill file — persona, principles, modes, loading rules
+├── README.md                         # this file
+├── LICENSE                           # MIT
+├── .gitignore
 └── references/
-    ├── examples.md         ← four worked dialogues showing Marcus's voice
-    └── lineage.md          ← deep material on Simons, Thorp, López de Prado, Asness,
-                              war stories, and the math (Kelly, DSR, PBO formulas)
+    ├── examples.md                   # four worked dialogues — load once per conversation for voice
+    ├── lineage.md                    # depth on Simons, Thorp, López de Prado, Asness; war stories; math
+    ├── backtest-methodology.md       # how to test, performance metrics, code review, red flags
+    ├── edge-and-sizing.md            # the five edge buckets, sizing rules, feature gates, kill-switch
+    ├── strategy-lifecycle.md         # psychology, decay, workflow, "give me a strategy" full handler
+    ├── crypto-perps.md               # funding, basis, counterparty risk, liquidation cascades
+    └── decision-marking.md           # compact inline-decision-mark format reference (~1,000 tokens)
 ```
 
-Progressive disclosure: `SKILL.md` stays operational and under 300 lines. The two reference files are loaded on demand — `examples.md` at the start of any substantive trading conversation to calibrate voice, `lineage.md` when the user wants attribution, depth, the "why" behind a principle, or the math behind a formula.
+### Reference file loading
+
+All reference files load conditionally — only when their specific trigger fires. The default is don't load.
+
+- **`examples.md`** — load **once per conversation** on the first substantive turn for voice calibration. Do not reload unless voice drifts.
+- **`lineage.md`** — load when the user wants attribution, depth on a specific figure, or the math behind a formula.
+- **`backtest-methodology.md`** — load when reviewing a backtest, auditing code, or asked about methodology or metrics.
+- **`edge-and-sizing.md`** — load when evaluating an edge thesis, discussing sizing, running the feature-addition gates, or defining a kill-switch.
+- **`strategy-lifecycle.md`** — load when user is in a drawdown, asks for a strategy directly, asks about decay/workflow, or shows behavioral warning signs.
+- **`crypto-perps.md`** — load when the conversation specifically involves crypto perps.
+- **`decision-marking.md`** — load when recording a decision mark for the first time in a conversation.
+
+## Token efficiency
+
+This skill is designed to load reference files only when their specific triggers fire. Per-conversation cost on routine work is roughly 5,000-9,000 tokens for the first turn (SKILL.md + examples.md + 1-2 reference files depending on the request), then near-zero on follow-up turns. Per-decision marking cost is ~1,000 tokens (loads the compact `decision-marking.md`).
+
+The previous version (v1.0) had a 9,300-token SKILL.md that loaded everything inline plus an imperative loading rule that re-read `examples.md` on every substantive turn. The current version trims SKILL.md to ~3,500 tokens, moves depth to reference files, and uses conditional loading rules.
+
+If Marcus is loading more than expected, check that the loading rules in `SKILL.md` are still being followed — the behavior is sensitive to how those rules are phrased.
 
 ## Installation
 
@@ -59,39 +93,18 @@ A `.skill` file is just a zip of the skill folder. From the parent of `algo-trad
 zip -r algo-trading-veteran.skill algo-trading-veteran/
 ```
 
-Or use Anthropic's skill-creator packaging script if you have it available.
-
-## The persona in one paragraph
-
-Marcus started on a futures desk in 2008, went independent in 2014, and has been running his own book ever since. He's had 50–80% years and years where he gave most of it back. He blew up exactly one account (2015, EURCHF unpeg, levered FX carry — he still brings it up). He now runs a small fund of his own capital, mostly futures and crypto perps, with a couple of equity stat-arb books on the side. He's direct, dry, allergic to hype, generous with knowledge, and would rather kill a bad idea in five minutes than let you waste a month on it.
-
-## Design notes
-
-A few decisions worth flagging for anyone reading the source:
-
-- **Voice is treated as first-class.** There's a whole "voice failure modes" section in SKILL.md enumerating the LLM defaults that destroy the persona (bullet salad, sycophancy, hedging mush, "it's not just X it's Y," sign-offs). Without it, the persona drifts within a few turns.
-- **Examples are the highest-leverage piece.** `references/examples.md` contains four full worked dialogues written in Marcus's actual voice. SKILL.md tells the model to load them at the start of any substantive conversation. A model can read fifty rules about voice and still drift; one good example to imitate keeps it on rails for a whole conversation.
-- **The "give me a strategy" handler is explicit.** Users will absolutely ask. The skill doesn't just say "no" — it specifies the three-part redirect (name why, offer what Marcus will do instead, ask the wedge question: *"is there a behavior you've noticed in that market that you can't quite explain?"*).
-- **Decay is treated as the base case**, not a footnote. Roughly half of a published anomaly's Sharpe vanishes after publication. Strategies are products with shelf lives, not monuments.
-- **The 50–80% return claim in the persona is handled honestly.** Marcus acknowledges it's possible at small capital in friendly regimes, refuses to promise it, and warns against anyone selling it. Otherwise the skill becomes a hype machine and gives bad advice.
-- **Crypto perps get specific treatment** (funding as P&L, basis trades, exchange counterparty risk, liquidation cascades, token survivorship) because the persona supposedly trades them and it would feel fake otherwise.
-
-## Not included, deliberately
-
-- Specific code snippets or library tutorials — dates fast, contradicts the "build it yourself" principle.
-- Options pricing, Greeks, vol surfaces — Marcus is a directional / stat-arb trader, not an options market-maker. Pretending otherwise would weaken the voice by making him a generalist.
-- A list of "strategies to try" — handing out recipes contradicts the edge-first principle the whole skill is built on.
-
 ## Testing it
 
 The fastest way to know whether the skill is working:
 
-1. Ask Marcus to give you a profitable strategy. He should redirect without lecturing.
+1. Ask Marcus to give you a profitable strategy. He should redirect using the three-part move (name why, offer instead, ask the wedge question) without lecturing.
 2. Hand him a backtest with a suspiciously clean Sharpe. He should ask about parameter search count, costs, regime coverage, and data provenance before commenting on the number.
 3. Tell him you're in a 3-month drawdown and want to retune. He should tell you not to, and walk you through the bootstrap-test → halt → re-research sequence.
 4. Ask whether a new feature is worth adding. He should run it through the five gates (rationale, orthogonality, OOS lift, stability, cost of complexity) and default to "no" when in doubt.
+5. Paste a crypto perp backtest. He should ask whether you netted out funding before commenting on returns.
+6. Make him give you a specific sizing recommendation. He should mark it as an `algorithm`-category decision.
 
-If any of these feel off in the actual responses, the skill is drifting and the first thing to check is whether `references/examples.md` is being loaded.
+If any of these feel off, the skill is drifting and the first thing to check is whether `references/examples.md` is being loaded on the first substantive turn.
 
 ## License
 

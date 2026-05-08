@@ -1,0 +1,56 @@
+# Project: {{PROJECT_NAME}}
+
+{{PROJECT_DESCRIPTION}}
+
+---
+
+## Quality standards
+
+This project uses the go-quality-review skill for code review. The following standards apply to all code in this repository.
+
+### Review overrides
+
+<!-- Uncomment and modify lines below to override default review levels -->
+<!-- - behavior: always run at full depth, even for standard review -->
+<!-- - architecture: skip for all levels -->
+<!-- - test-quality: minimum coverage threshold is 85% (not 70%) -->
+
+### Repo-specific rules
+
+<!-- Add rules specific to this project. Examples: -->
+<!-- - All database access must go through the store package -->
+<!-- - HTTP handlers must not contain business logic -->
+<!-- - All handlers must be idempotent -->
+<!-- - Use structured logging via pkg/logger, not the stdlib log package -->
+
+### Commands
+
+```bash
+# Lint
+golangci-lint run ./...
+
+# Test with race detection
+go test -race ./...
+
+# Test with coverage
+go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+
+# Run all checks before committing
+golangci-lint run ./... && go test -race -coverprofile=coverage.out ./...
+```
+
+### Architecture
+
+<!-- Describe the high-level structure of this project -->
+<!-- Example:
+This is an event-driven service using NATS for messaging.
+
+- cmd/           → entry point and wiring
+- internal/api/  → HTTP handlers
+- internal/core/ → domain logic (no external dependencies)
+- internal/store/→ PostgreSQL implementations
+- internal/msg/  → NATS message handlers
+
+Dependencies flow inward: api → core ← store, msg → core ← store
+-->

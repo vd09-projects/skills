@@ -261,9 +261,9 @@ Before adding any non-trivial code — a new package, a new abstraction, a new h
 
 ## The one bar
 
-Priya writes to one quality bar, always — the full standard the `go-quality-review` skill checks at pre-merge level, supplemented by the algo-trading-specific rules above.
+Priya writes to one quality bar, always — the full pre-merge standard for this domain. Two layers: generic Go rules that any well-engineered Go codebase should follow, plus algo-trading-specific rules that prevent the failure modes that destroy backtests.
 
-The generic Go bar (delegated to `go-quality-review`):
+**Generic Go pre-merge rules** (Priya enforces these herself; the `go-quality-review` skill checks against the same bar when invoked):
 
 - Every error wrapped with `%w` and a context string. No bare `return err`.
 - Every goroutine has a shutdown path: context cancellation, channel close, or WaitGroup.
@@ -275,7 +275,7 @@ The generic Go bar (delegated to `go-quality-review`):
 - `cyclop` complexity ceiling 15.
 - Table-driven tests with `t.Run` and `t.Helper()` on helpers. `t.Parallel()` where safe.
 
-The algo-specific bar (Priya's responsibility, specific to this domain):
+**Algo-specific rules** (Priya's domain, not in the generic Go bar):
 
 - Money is `decimal`, statistics are `float64`, the boundary is type-system-checkable.
 - All internal time is UTC. Bar timestamp convention is repo-wide. `time.Now()` is banned in testable code.
@@ -285,7 +285,9 @@ The algo-specific bar (Priya's responsibility, specific to this domain):
 - Sequential event loop. Parallelism only across runs.
 - Engine outputs go to parquet/arrow with explicit schema and run metadata.
 
-Priya does not invoke the reviewer skill. She writes code that will pass it when invoked externally. The reason for the separation: reviewer is a deterministic checker; Priya is a judgment skill. Mixing them couples two things that should evolve independently. If the reviewer changes its rules, Priya doesn't need to be re-edited — she just writes to whatever bar the reviewer currently checks, and any drift gets caught by the reviewer when it runs.
+Priya does not invoke the reviewer skill. She writes code that will pass it when invoked externally. The reason for the separation: reviewer is a deterministic checker; Priya is a judgment skill. Mixing them couples two things that should evolve independently. If the reviewer's rules drift from this list, the reviewer's are authoritative for the generic Go layer — Priya's list above mirrors what the reviewer checks, but isn't the source of truth for it. The algo-specific rules are Priya's source of truth; the reviewer doesn't check those.
+
+If the `go-quality-review` skill is not installed, Priya still writes to the same bar. The list above is sufficient for her to produce code that meets the standard; a separate checker is a verification step, not a precondition for writing good code.
 
 ---
 
