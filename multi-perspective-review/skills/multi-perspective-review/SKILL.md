@@ -60,12 +60,17 @@ Add `always_include` reviewers. Remove `always_exclude`. Apply custom path-based
 | Locks, channels, async/await, threads | Concurrency & State Safety Reviewer |
 | New imports, deps, module boundaries | Dependency & Coupling Reviewer |
 | Schema changes, migrations, ORM models | Data Integrity & Migration Reviewer |
+| Dockerfile, CI/CD config, k8s/infra manifests, env var additions | Infrastructure & Deployment Reviewer |
+| Removed/renamed public symbols, signature changes, breaking removals | Backward Compatibility Reviewer |
+| HTML/JSX/TSX, CSS, form/modal/interactive UI changes | Accessibility Reviewer |
+| New public functions/interfaces/modules, CLI flags, config schema | Developer Experience Reviewer |
+| New public APIs, changed behavior, architecture changes, config additions | Documentation Reviewer |
 
 ### Step 4: Apply panel size limits
 - `trivial`: 1–2 reviewers
 - `small`: 2–4 reviewers
-- `medium`: 4–7 reviewers
-- `large`: 5–10 reviewers
+- `medium`: 4–8 reviewers
+- `large`: 5–12 reviewers
 
 Baseline: unless scope is `trivial`, always include **Tech Debt Sentinel** and **Naming & Clarity Guardian**.
 
@@ -94,6 +99,18 @@ Read `references/output-format.md` for the per-reviewer template and review rule
 
 Then execute each reviewer's analysis against the diff, using their voice and checklist.
 
+### Cross-Reviewer Escalation
+
+After each reviewer completes, check: does their finding implicate another reviewer's domain? If so, note it inline. Common escalation paths:
+
+- **Security BLOCKING** (e.g., raw SQL, auth bypass) → flag for **Ripple Effect Analyst** to check if same pattern exists elsewhere
+- **Data Integrity BLOCKING** (schema change) → flag for **Backward Compatibility Reviewer** to check consumers
+- **API Contract BLOCKING** (interface change) → flag for **Backward Compatibility Reviewer**
+- **Concurrency BLOCKING** (shared state) → flag for **Observability** to verify the race is detectable in production
+- **Infrastructure BLOCKING** (secrets in image) → flag for **Security** to check other exposure vectors
+
+If an escalation fires for a skipped reviewer, promote them to active and run their checklist. Note the escalation in triage output.
+
 ## Phase 3 — Summary
 
 After all reviews, produce:
@@ -101,9 +118,9 @@ After all reviews, produce:
 ```
 ## Review Summary
 
-| Reviewer | Verdict | Blocking | Suggestions | FYI |
-|---|---|---|---|---|
-| [Name] | [Verdict] | [n] | [n] | [n] |
+| Reviewer | Verdict | Blocking | Suggestions | FYI | Confidence |
+|---|---|---|---|---|---|
+| [Name] | [Verdict] | [n] | [n] | [n] | HIGH/MED/LOW |
 
 **Overall Recommendation:** APPROVE | REQUEST CHANGES | NEEDS DISCUSSION
 
@@ -111,8 +128,14 @@ After all reviews, produce:
 
 **Blocking Items:** [numbered list with file/function refs]
 **Top Suggestions:** [numbered list]
+**Corroborated Findings:** [issues flagged by 2+ reviewers — highest signal, act first]
 **Accepted Debt:** [item — follow-up action + timeline]
 ```
+
+**Confidence rating per reviewer:**
+- **HIGH** — diff provides full context; reviewer could identify specific line/function
+- **MED** — diff present but missing PR description, ticket, or surrounding code
+- **LOW** — reviewer activated but lacked enough context to be specific (note what context would help)
 
 **Recommendation logic:**
 - **APPROVE** — Zero blocking issues.
@@ -131,4 +154,4 @@ If the review found new accepted debt, recurring patterns, or convention discove
 
 See `references/reviewer-template.md` for the blank template.
 
-Future reviewer ideas: Accessibility, i18n/l10n, Cloud Cost, Migration Safety, Documentation, DX (Developer Experience).
+Possible future extensions: i18n/l10n, Cloud Cost, Migration Safety.

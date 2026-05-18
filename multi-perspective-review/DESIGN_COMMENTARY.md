@@ -6,11 +6,17 @@ v1 was a 667-line monolith. Every reviewer loaded every time — even if triage 
 
 v2: SKILL.md is ~120 lines (the orchestrator). Each reviewer is a separate file in `references/reviewers/`. Only selected reviewers get loaded. A 3-reviewer hotfix loads ~210 lines total vs 667. A 7-reviewer feature loads ~370. The ceiling dropped and scales with actual need.
 
-## Why These 13 Reviewers
+## Why These 18 Reviewers
 
-The 12 from the original spec plus Data Integrity & Migration (#13) — schema changes are high-risk, low-visibility, and no other reviewer covers them.
+Original 12 plus:
+- **Data Integrity & Migration** (#13) — schema changes are high-risk, low-visibility, and no other reviewer covers them.
+- **Infrastructure & Deployment** (#14) — Dockerfile, CI/CD, k8s manifests are frequent sources of production incidents. Zero overlap with existing reviewers.
+- **Backward Compatibility** (#15) — API Contract covers *quality* of new contracts; Backward Compat covers *breakage to existing consumers*. Distinct concern, distinct voice.
+- **Accessibility** (#16) — blocking a11y regressions matter for any UI-touching change. Triage triggers only on HTML/JSX/CSS signals.
+- **Developer Experience** (#17) — reviews the ergonomics and safety of what developers build against, not just what end users see.
+- **Documentation** (#18) — the only reviewer that asks "will the person maintaining this in 6 months understand why it was built this way?"
 
-Accessibility, i18n, Cloud Cost, Documentation, DX are listed as extensibility examples, not built-in. They're domain-specific — not every team needs them. Including them by default creates noise.
+i18n, Cloud Cost, Migration Safety remain as future extensions — domain-specific enough to warrant explicit team decision to include.
 
 ## Triage Design
 
@@ -31,10 +37,15 @@ Three files with distinct lifespans:
 
 Critical constraint: never write without user confirmation. The skill suggests updates; the user approves.
 
-## v2 Ideas
+## Implemented in v2
 
-- Reviewer cross-references ("Security flagged raw SQL — I'll note the missing index too")
-- Confidence calibration (low/medium/high based on available context)
-- Auto-severity escalation (Security BLOCKING → escalate Ripple Effect to check elsewhere)
+- **5 new reviewers** — Infrastructure & Deployment, Backward Compatibility, Accessibility, DX, Documentation
+- **Cross-reviewer escalation** — Security/DataIntegrity/APIContract BLOCKING can promote skipped reviewers to active
+- **Confidence calibration** — HIGH/MED/LOW per reviewer in summary table
+- **Corroborated Findings** — Phase 3 explicitly surfaces issues flagged by 2+ reviewers
+
+## Future Ideas
+
 - Review-of-review (re-run only affected reviewers after author fixes)
 - Metrics tracking in skill memory (which reviewers find the most blocking issues?)
+- i18n/l10n reviewer, Cloud Cost reviewer, Migration Safety reviewer
