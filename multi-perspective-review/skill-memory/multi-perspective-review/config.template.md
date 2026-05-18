@@ -1,0 +1,23 @@
+# Project Config
+
+## Reviewer Overrides
+always_include:
+  <!-- - Security & Trust Reviewer (compliance requirement) -->
+
+always_exclude:
+  <!-- - Concurrency & State Safety Reviewer (single-threaded service) -->
+
+## Project Context
+domain: <!-- e.g., "Algorithmic trading platform" -->
+primary_languages: <!-- e.g., Go, Python -->
+architecture: <!-- e.g., Microservices on Kubernetes -->
+urgency_default: normal
+debt_tolerance: normal <!-- low | normal | high -->
+
+## Custom Triage Rules
+<!-- - Any change touching `pkg/payments/` → always include Security & Trust Reviewer -->
+<!-- - Migration files → treat as scope: large regardless of line count -->
+
+## Reviewer Voice Tuning
+<!-- - Tech Debt Sentinel: stricter — over debt budget this quarter -->
+<!-- - Naming Guardian: enforce Go conventions (PascalCase exports) -->
