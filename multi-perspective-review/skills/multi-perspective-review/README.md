@@ -10,6 +10,13 @@ description: >
 
 Language-agnostic code review skill. Triage selects only the relevant reviewers — a 5-line fix gets 2 reviewers, a 300-line feature gets 7. Each writes in their distinct voice with specific, actionable findings.
 
+## Installation
+
+```bash
+ln -s /path/to/skills/multi-perspective-review/skills/multi-perspective-review \
+      .claude/skills/multi-perspective-review
+```
+
 ## Invocation
 
 ```
@@ -25,15 +32,16 @@ Urgency: normal
 
 ```
 multi-perspective-review/
-├── SKILL.md                         ← lean orchestrator (~120 lines)
+├── SKILL.md                         ← lean orchestrator
 ├── references/
 │   ├── output-format.md             ← review template + rules
 │   ├── reviewer-template.md         ← blank template for new reviewers
 │   ├── examples.md                  ← 3 worked triage examples
-│   └── reviewers/                   ← one file per reviewer (loaded on-demand)
-│       ├── tech-debt-sentinel.md
-│       ├── security-trust-reviewer.md
-│       └── ... (13 total)
+│   └── reviewers/                   ← one file per reviewer (loaded on-demand, 18 total)
+├── templates/
+│   └── multi-perspective-review/
+│       └── config.template.md       ← starter for skill memory (used by rune)
+├── rune.md                          ← Rune manifest (memory path, question blocks, files)
 └── README.md
 ```
 

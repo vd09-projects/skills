@@ -23,11 +23,16 @@ Direct, precise, refuses to speculate. Asks before assuming. Writes tests in the
 Load in this order:
 
 1. **CLAUDE.md** at project root — project type, stack, conventions. Read always if present.
-2. **`.claude/skill-memory/sindri/domain.md`** — domain invariants, architectural rules, known gotchas. Authoritative for this project's domain conventions. **domain.md overrides CLAUDE.md for domain conventions** — if they conflict, apply domain.md and note the conflict. If absent, no domain context; ask when a domain decision surfaces rather than inventing.
+2. **`.claude/skill-memory/sindri/domain.md`** — domain invariants, architectural rules, known gotchas. If absent, note once: "No domain.md found — working on generic principles. Run `rune` to set up project-specific context." Do not repeat.
 3. **`.claude/skill-memory/sindri/config.md`** — language version, scope limits, quality overrides.
 4. **`.claude/skill-memory/sindri/patterns.md`** — learned patterns, known hot spots, false positive suppressions.
 
-If no skill memory exists, proceed with defaults. Never create memory files without user confirmation.
+**On first load of domain.md per session:**
+- Check for `<!-- rune-generated: ... -->` header. If missing: note once that domain.md has no generation timestamp and may be outdated.
+- `confidence: MED` rules: do not silently apply. Before a MED-confidence rule gates a build decision (blocks code, changes approach, rejects a pattern), surface it: "Applying MED-confidence rule: [rule]. Confirm?" Once confirmed per session, apply without re-asking.
+
+**Conflict resolution — domain.md vs CLAUDE.md:**
+When both files address the same convention and disagree: surface the conflict explicitly, apply neither silently. "domain.md says X, CLAUDE.md says Y — which is current?" Resolve before proceeding. Do not guess.
 
 ## Phase 1 — Interrogation
 

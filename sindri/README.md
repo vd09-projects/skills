@@ -4,29 +4,30 @@ Generic implementation skill. Language-aware (Go, Python, TypeScript, React, Nex
 
 ## Installation
 
-Link this directory as a skill in the target project's `.claude/settings.json`:
+Copy or symlink into `.claude/skills/`:
 
-```json
-{
-  "skills": [
-    "/path/to/skills/sindri"
-  ]
-}
+```bash
+ln -s /path/to/skills/sindri .claude/skills/sindri
 ```
 
-## Skill memory (optional but recommended)
+Or personal install (available across all projects):
 
-The skill reads per-project memory from `.claude/skill-memory/sindri/` in the target project repo. Without it the skill works fine on generic principles — with it, it applies your project's domain conventions automatically.
+```bash
+ln -s /path/to/skills/sindri ~/.claude/skills/sindri
+```
 
-Three files, all optional. Copy from `templates/` and fill in:
+Claude Code auto-discovers skills from `.claude/skills/` — no config needed.
 
-| Template | Copy to (in project repo) | Purpose |
-|---|---|---|
-| `templates/sindri/domain.template.md` | `.claude/skill-memory/sindri/domain.md` | Domain invariants, architectural rules, known gotchas. The skill reads this before writing any code. |
-| `templates/sindri/config.template.md` | `.claude/skill-memory/sindri/config.md` | Language version, scope limits, quality overrides, interrogation defaults. |
-| `templates/sindri/patterns.template.md` | `.claude/skill-memory/sindri/patterns.md` | Grows over time — learned patterns, known hot spots, accepted debt. |
+Install alongside `rune` — Rune generates Sindri's skill memory automatically.
 
-### Setup for a new project
+## Skill memory
+
+Sindri reads per-project memory from `.claude/skill-memory/sindri/` in the target project. Without it, works on generic principles — with it, applies your domain conventions automatically.
+
+**Recommended: use `rune` to generate these files.**
+Rune grills you about the project then writes all memory files in one pass.
+
+**Manual setup:** Copy templates from this skill's own `templates/` directory:
 
 ```bash
 mkdir -p .claude/skill-memory/sindri
@@ -41,20 +42,24 @@ cp /path/to/skills/sindri/templates/sindri/patterns.template.md \
    .claude/skill-memory/sindri/patterns.md
 ```
 
-Then fill in the domain and config files. Leave patterns.md mostly empty — it grows through use.
+| File | Purpose |
+|---|---|
+| `domain.md` | Domain invariants, rules, gotchas — Sindri's source of truth |
+| `config.md` | Language, scope limits, quality overrides |
+| `patterns.md` | Grows through use — hot spots, false positives, debt |
 
 ## What's in this skill
 
 ```
-SKILL.md                        ← skill entrypoint (loaded on activation)
+SKILL.md                        ← skill entrypoint
 references/
   languages/
-    go.md                       ← Go patterns (loaded when Go detected)
+    go.md                       ← Go patterns
     python.md                   ← Python patterns
     typescript.md               ← TypeScript/JavaScript patterns
-    react.md                    ← React patterns (loaded alongside typescript.md)
-    nextjs.md                   ← Next.js patterns (loads react.md too)
-    css.md                      ← CSS patterns (loaded on styling changes)
+    react.md                    ← React patterns
+    nextjs.md                   ← Next.js patterns
+    css.md                      ← CSS patterns
   phases.md                     ← Plan / Build / Iterate / Spike discipline
   quality-gates.md              ← Universal quality bar
 templates/
@@ -62,8 +67,9 @@ templates/
     domain.template.md          ← starter for domain.md
     config.template.md          ← starter for config.md
     patterns.template.md        ← starter for patterns.md
+rune.md                         ← Rune manifest (memory path, question blocks, files)
 ```
 
 ## With a domain persona skill
 
-If the project also has a domain persona skill (e.g., `algo-trading-lead-dev`), the implement skill defers to it for domain judgment calls. Set `domain_persona` in `config.md` to name it.
+If the project has a domain persona skill (e.g., `algo-trading-lead-dev`), Sindri defers to it for domain judgment calls. Set `domain_persona` in `config.md` to name it.

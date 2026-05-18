@@ -1,76 +1,92 @@
 # Domain Knowledge — [Project Name]
 
+<!-- rune-generated: [DATE] | git: [GIT_SHA] | rune: 1.0 -->
+<!-- Sindri checks this header for staleness. Re-run `rune` if the project has significantly changed. -->
+
 Copy this file to `.claude/skill-memory/sindri/domain.md` in your project repo.
-Sindri reads it on every activation. Keep it current — stale conventions
-mislead more than no conventions.
+Sindri reads it on every activation. Keep it current — stale conventions mislead more than no conventions.
+
+**Confidence levels:**
+- `HIGH` — verified in code or confirmed by team. Sindri applies without asking.
+- `MED` — from grilling session, not yet confirmed in code. Sindri asks once before gating a decision on this.
 
 ---
 
 ## Domain Context
+<!-- confidence: HIGH | MED -->
 
-<!-- What is this project? What does it do in business terms?
-     One paragraph. Sindri uses this to calibrate what "correct" means
-     for domain decisions that aren't in CLAUDE.md. -->
+<!-- What is this project in business terms. Who uses it. What it must do correctly. One paragraph. -->
+
+---
 
 ## Core Invariants
+<!-- confidence: HIGH | MED -->
 
-<!-- Properties that must hold in all implementations. Non-negotiable.
-     Sindri blocks and asks before violating these.
+<!-- Things that must NEVER be violated. Sindri blocks before violating HIGH-confidence invariants.
+     MED-confidence invariants trigger a one-time confirmation.
 
      Examples:
-     - "All monetary values use Decimal, never float"
-     - "Every write operation is idempotent"
-     - "Engine outputs are the source of truth — never recompute in the consumer layer"
+     - "All monetary values use Decimal, never float" (HIGH)
+     - "Every write operation is idempotent" (HIGH)
+     - "Engine outputs are the source of truth" (MED — assumed, not yet verified in full codebase)
 -->
+
+---
 
 ## Architectural Rules
+<!-- confidence: HIGH | MED -->
 
-<!-- Structural decisions already made. Don't relitigate them; apply them.
-
-     Examples:
-     - "Engine is source of truth. Python layer reads engine outputs only."
-     - "Services communicate via events, not direct calls"
-     - "No business logic in HTTP handlers — handlers delegate to service layer"
--->
-
-## Conventions
-
-<!-- Naming, file structure, patterns in use.
-     Focus on things that differ from language defaults.
+<!-- Structural decisions already final. Sindri applies without relitigating.
 
      Examples:
-     - "Repository methods return (entity, error), never (nil, nil)"
-     - "Config loaded once at startup, passed via dependency injection"
-     - "All times stored and passed as UTC; convert at display boundary only"
+     - "Engine is source of truth. Python layer reads outputs only." (HIGH)
+     - "Services communicate via events, not direct calls" (MED)
 -->
+
+---
+
+## Domain Terminology
+
+<!-- Terms that mean something specific in this project's context.
+     No confidence needed — these are definitions, not constraints.
+
+     Examples:
+     - **Bar**: a single OHLCV data point at a fixed time interval
+     - **Fill**: an executed order with price and quantity confirmed
+-->
+
+---
 
 ## Known Gotchas
+<!-- confidence: HIGH | MED -->
 
-<!-- Domain-specific traps. What has broken before. What looks right but isn't.
+<!-- What has broken before. What looks right but isn't.
 
      Examples:
-     - "Map iteration in the event loop — always sort keys before iterating"
-     - "Session boundaries are exchange-local, not UTC midnight"
-     - "The cache layer is eventually consistent — don't read-after-write through it"
+     - "Map iteration in the event loop — always sort keys before iterating" (HIGH)
+     - "Cache layer is eventually consistent — don't read-after-write" (MED)
 -->
+
+---
 
 ## Out of Scope
 
-<!-- What Sindri should NOT build in this project, even if asked.
-     Block and surface to user instead.
+<!-- What Sindri should NOT build here, even if asked. Block and surface to user instead.
 
      Examples:
      - "Live trading concerns — backtest and research only"
-     - "Admin UI — handled by separate service team"
+     - "Admin UI — handled by separate team"
 -->
 
-## Quality Additions
+---
 
-<!-- Domain-specific quality gates stacked on top of quality-gates.md.
-     These must pass before "Ready for review." in this project.
+## Quality Additions
+<!-- confidence: HIGH | MED -->
+
+<!-- Domain-specific quality gates stacked on top of Sindri's generic gates.
+     Must pass before "Ready for review." in this project.
 
      Examples:
-     - "Golden test required for any change to the event loop or accounting"
-     - "Property test required for any accounting invariant"
-     - "Determinism check: same input → byte-identical output across two runs"
+     - "Golden test required for any change to the event loop" (HIGH)
+     - "Property test required for accounting invariants" (HIGH)
 -->
