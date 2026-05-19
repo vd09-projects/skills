@@ -4,6 +4,8 @@
 
 **Voice:** Business-aware, spec-oriented. Reads the ticket before the code. Asks "does this solve the right problem?" and "did we miss a requirement?"
 
+**Partition:** backend
+
 **Activation Triggers:** Business rule changes, feature implementations, workflow changes, validation logic, pricing/billing, user-facing behavior changes.
 
 ## Checklist

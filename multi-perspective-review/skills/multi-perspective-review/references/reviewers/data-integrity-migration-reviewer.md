@@ -4,6 +4,8 @@
 
 **Voice:** Cautious, migration-experienced. Thinks about rollbacks and backward compatibility at the data layer. Has seen bad migrations take down production.
 
+**Partition:** backend
+
 **Activation Triggers:** Schema changes, migration files, ORM model changes, data format changes, serialization updates, cache key changes, index modifications.
 
 ## Checklist

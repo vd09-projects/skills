@@ -43,7 +43,36 @@ Add `always_include` reviewers. Remove `always_exclude`. Apply custom path-based
 - `medium` — 50–200 lines, multi-file (new feature, refactor)
 - `large` — 200+ lines, cross-cutting (major feature, architecture change)
 
-### Step 3: Detect signals and match reviewers
+### Step 3: Detect change partition
+
+Scan changed file paths and extensions:
+
+| Partition | File signals |
+|---|---|
+| `frontend` | `.tsx` `.jsx` `.css` `.scss` `.module.css` `.vue` `.svelte`; paths: `components/` `pages/` `styles/` `app/` |
+| `backend` | `.go` `.py` `.java` `.rs` `.rb` `.sql` `.prisma`; paths: `migrations/` `api/` `handlers/` `services/` `models/` `controllers/` `db/` |
+| `infra` | `Dockerfile` `docker-compose*` `.yml`/`.yaml` (CI); paths: `k8s/` `terraform/` `.github/workflows/` |
+| `fullstack` | Both `frontend` and `backend` signals present |
+
+If no clear signal, treat as `fullstack` (safe fallback — all reviewers eligible).
+
+### Step 4: Pre-filter reviewer pool by partition
+
+| Detected partition | Eligible reviewer partitions |
+|---|---|
+| `frontend` | common + frontend |
+| `backend` | common + backend |
+| `infra` | common + infra |
+| `fullstack` | common + frontend + backend |
+| `frontend` + `infra` | common + frontend + infra |
+| `backend` + `infra` | common + backend + infra |
+| Ambiguous / unknown | All partitions |
+
+### Step 5: Detect signals and match reviewers
+
+Within the pre-filtered pool only:
+
+#### Common
 
 | Signal in diff | Reviewer to activate |
 |---|---|
@@ -52,21 +81,39 @@ Add `always_include` reviewers. Remove `always_exclude`. Apply custom path-based
 | New/renamed identifiers, comments | Naming & Clarity Guardian |
 | Tests added/modified/deleted | Test Coverage Auditor |
 | Input parsing, auth, secrets, env vars | Security & Trust Reviewer |
-| DB queries, loops, caching, hot paths | Performance & Scalability Critic |
-| Public API/endpoint/interface changes | API & Contract Reviewer |
 | Try/catch, error returns, service calls | Error Handling & Resilience Inspector |
-| Logging, metrics, tracing additions | Observability & Debuggability Reviewer |
-| Business rules, domain model changes | Domain Logic Reviewer |
-| Locks, channels, async/await, threads | Concurrency & State Safety Reviewer |
 | New imports, deps, module boundaries | Dependency & Coupling Reviewer |
-| Schema changes, migrations, ORM models | Data Integrity & Migration Reviewer |
-| Dockerfile, CI/CD config, k8s/infra manifests, env var additions | Infrastructure & Deployment Reviewer |
 | Removed/renamed public symbols, signature changes, breaking removals | Backward Compatibility Reviewer |
-| HTML/JSX/TSX, CSS, form/modal/interactive UI changes | Accessibility Reviewer |
 | New public functions/interfaces/modules, CLI flags, config schema | Developer Experience Reviewer |
 | New public APIs, changed behavior, architecture changes, config additions | Documentation Reviewer |
 
-### Step 4: Apply panel size limits
+#### Backend
+
+| Signal in diff | Reviewer to activate |
+|---|---|
+| DB queries, loops, caching, hot paths | Performance & Scalability Critic |
+| Public API/endpoint/interface changes | API & Contract Reviewer |
+| Logging, metrics, tracing additions | Observability & Debuggability Reviewer |
+| Business rules, domain model changes | Domain Logic Reviewer |
+| Locks, channels, async/await, threads | Concurrency & State Safety Reviewer |
+| Schema changes, migrations, ORM models | Data Integrity & Migration Reviewer |
+
+#### Frontend
+
+| Signal in diff | Reviewer to activate |
+|---|---|
+| HTML/JSX/TSX, ARIA, form/modal/interactive UI changes | Accessibility Reviewer |
+| useState/useReducer/useContext, Redux/Zustand/Jotai, React Query/SWR/Apollo | State Management Reviewer |
+| Component re-renders, useMemo/useCallback, dynamic imports, image assets, list rendering | FE Performance & Rendering Reviewer |
+| CSS/SCSS/module.css, className changes, theme tokens, animations, responsive layout | CSS & Styling Reviewer |
+
+#### Infrastructure
+
+| Signal in diff | Reviewer to activate |
+|---|---|
+| Dockerfile, CI/CD config, k8s/infra manifests, env var additions | Infrastructure & Deployment Reviewer |
+
+### Step 6: Apply panel size limits
 - `trivial`: 1–2 reviewers
 - `small`: 2–4 reviewers
 - `medium`: 4–8 reviewers
@@ -74,15 +121,16 @@ Add `always_include` reviewers. Remove `always_exclude`. Apply custom path-based
 
 Baseline: unless scope is `trivial`, always include **Tech Debt Sentinel** and **Naming & Clarity Guardian**.
 
-### Step 5: Output triage decision
+### Step 7: Output triage decision
 
 ```
 ## Triage Decision
 Scope: [scope]
+Partition: [frontend | backend | infra | fullstack | ambiguous]
 Memory overrides: [any applied, or "none"]
 
 Selected Reviewers:
-- [Name] — [one-line justification]
+- [Name] ([partition]) — [one-line justification]
 
 Skipped:
 - [Name] — [reason]
@@ -148,9 +196,10 @@ If the review found new accepted debt, recurring patterns, or convention discove
 
 ## Adding a New Reviewer
 
-1. Create `references/reviewers/{slug}.md` following the template in any existing reviewer file
-2. Add a row to the signal-matching table in Phase 1 Step 3 above
-3. Done — no other files need editing
+1. Create `references/reviewers/{slug}.md` following the template in `references/reviewer-template.md`
+2. Set `Partition:` to `common`, `backend`, `frontend`, or `infra`
+3. Add a row to the relevant signal table in Phase 1 Step 5 above
+4. Done — no other files need editing
 
 See `references/reviewer-template.md` for the blank template.
 

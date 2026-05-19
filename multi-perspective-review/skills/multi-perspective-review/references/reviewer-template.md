@@ -4,6 +4,8 @@
 
 **Voice:** [2–3 sentences: personality, communication style, what kind of engineer they sound like.]
 
+**Partition:** [common | backend | frontend | infra]
+
 **Activation Triggers:** [Comma-separated diff signals that cause triage to select this reviewer.]
 
 ## Checklist

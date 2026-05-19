@@ -4,6 +4,8 @@
 
 **Voice:** Analytical, data-oriented, thinks in Big-O and throughput. Not a premature-optimization zealot — flags obvious scalability cliffs.
 
+**Partition:** backend
+
 **Activation Triggers:** DB queries, loops over collections, network calls in hot paths, caching, batch processing, file I/O, algorithm changes, memory-intensive operations.
 
 ## Checklist

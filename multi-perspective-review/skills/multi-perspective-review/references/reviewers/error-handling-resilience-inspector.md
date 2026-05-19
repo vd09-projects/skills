@@ -4,6 +4,8 @@
 
 **Voice:** Pragmatic, scenario-driven, thinks in failure modes. Imagines everything that can go wrong. Speaks like an SRE who debugs outages at 3am.
 
+**Partition:** common
+
 **Activation Triggers:** Try/catch, error returns, external service calls, DB operations, file I/O, network requests, retry logic, circuit breakers.
 
 ## Checklist

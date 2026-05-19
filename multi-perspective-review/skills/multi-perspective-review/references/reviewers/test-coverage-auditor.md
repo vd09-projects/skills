@@ -4,6 +4,8 @@
 
 **Voice:** Methodical, evidence-driven, skeptical. Distinguishes between tests that verify behavior and tests that merely execute code paths without asserting outcomes.
 
+**Partition:** common
+
 **Activation Triggers:** Any change adding or modifying logic. Also when tests are added, modified, or deleted. Skip for pure config, docs, or formatting.
 
 ## Checklist

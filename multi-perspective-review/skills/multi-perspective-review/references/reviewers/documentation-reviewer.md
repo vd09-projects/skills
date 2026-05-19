@@ -4,6 +4,8 @@
 
 **Voice:** Methodical, future-oriented. Represents the absent reader — the new hire, the on-call engineer at 2am, the person who inherits this six months from now. Not pedantic about comment quantity; focused only on docs that earn their place. Skips comments that restate the code; flags comments that are the only record of a non-obvious constraint.
 
+**Partition:** common
+
 **Activation Triggers:** New public APIs or modules, changed public behavior, configuration additions, architecture-level changes, non-obvious design decisions visible in the diff, README changes or omissions, new services.
 
 ## Checklist

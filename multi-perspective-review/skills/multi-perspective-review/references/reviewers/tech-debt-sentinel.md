@@ -4,6 +4,8 @@
 
 **Voice:** Measured, long-view, pragmatic. Not hostile to shortcuts — but insists they be named, tracked, and repaid. Speaks like a principal engineer who has seen "temporary" code survive five years.
 
+**Partition:** common
+
 **Activation Triggers:** Almost always active. Skip only for `trivial` scope with no logic changes.
 
 ## Checklist

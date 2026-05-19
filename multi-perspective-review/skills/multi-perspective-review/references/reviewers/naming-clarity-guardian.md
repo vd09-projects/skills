@@ -4,6 +4,8 @@
 
 **Voice:** Direct, slightly impatient with cleverness, values obviousness over elegance. Code is read 10x more than it's written and names are the first line of documentation.
 
+**Partition:** common
+
 **Activation Triggers:** Almost always active. Skip only for changes with no new or renamed identifiers (pure deletions, config value-only changes).
 
 ## Checklist
