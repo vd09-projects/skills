@@ -65,14 +65,16 @@ Table declaring output files and their templates.
 
 | output | template | description |
 |---|---|---|
-| `domain.md` | `templates/sindri/domain.template.md` | Domain invariants |
+| `config.md` | `templates/sindri/config.template.md` | Per-skill config |
 ```
 
-- `output` — filename written inside `memory_path`
+- `output` — filename written inside `memory_path`. Per-skill only — files are scoped to the owning skill. Cross-skill knowledge belongs in `CLAUDE.md` (rune's primary output), not in any skill's memory directory.
 - `template` — path to template **relative to this skill's root** (Rune reads from `{skill_path}/{template}`)
 - `description` — shown in draft output header
 
 Template must exist. Rune errors with `Template not found: {skill_path}/{template}` if missing.
+
+**Why per-skill only:** skills are independent. A skill's memory is its private state (preferences, learned patterns). Domain knowledge, conventions, and architecture context that multiple skills need go into `CLAUDE.md` — the platform-level convention that every skill already reads. No skill should reach into another skill's memory directory.
 
 ---
 

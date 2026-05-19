@@ -22,18 +22,15 @@ Install alongside `rune` — Rune generates Sindri's skill memory automatically.
 
 ## Skill memory
 
-Sindri reads per-project memory from `.claude/skill-memory/sindri/` in the target project. Without it, works on generic principles — with it, applies your domain conventions automatically.
+Sindri reads per-project memory from `.claude/skill-memory/sindri/` in the target project. Project context (domain rules, conventions, gotchas) lives in CLAUDE.md — Sindri reads that as the cross-skill context source. Sindri's own memory holds only sindri-specific preferences and learned patterns.
 
-**Recommended: use `rune` to generate these files.**
-Rune grills you about the project then writes all memory files in one pass.
+**Recommended: use `rune` to generate CLAUDE.md and Sindri's memory files.**
+Rune grills you about the project then writes CLAUDE.md plus per-skill memory in one pass.
 
 **Manual setup:** Copy templates from this skill's own `templates/` directory:
 
 ```bash
 mkdir -p .claude/skill-memory/sindri
-
-cp /path/to/skills/sindri/templates/sindri/domain.template.md \
-   .claude/skill-memory/sindri/domain.md
 
 cp /path/to/skills/sindri/templates/sindri/config.template.md \
    .claude/skill-memory/sindri/config.md
@@ -44,9 +41,11 @@ cp /path/to/skills/sindri/templates/sindri/patterns.template.md \
 
 | File | Purpose |
 |---|---|
-| `domain.md` | Domain invariants, rules, gotchas — Sindri's source of truth |
-| `config.md` | Language, scope limits, quality overrides |
-| `patterns.md` | Grows through use — hot spots, false positives, debt |
+| `CLAUDE.md` (project root) | Domain rules, conventions, gotchas — cross-skill context |
+| `config.md` | Sindri-specific: language, scope limits, quality overrides |
+| `patterns.md` | Sindri-specific: grows through use — hot spots, false positives, debt |
+
+Per-skill `domain.md` is no longer used. Domain content moved to CLAUDE.md sections (Domain Rules, Invariants, Conventions, Gotchas) — read by every skill via Claude Code's platform convention. If your project has a legacy `.claude/skill-memory/sindri/domain.md`, move its content into CLAUDE.md sections and delete the legacy file. Sindri no longer reads it.
 
 ## What's in this skill
 
@@ -64,7 +63,6 @@ references/
   quality-gates.md              ← Universal quality bar
 templates/
   sindri/
-    domain.template.md          ← starter for domain.md
     config.template.md          ← starter for config.md
     patterns.template.md        ← starter for patterns.md
 rune.md                         ← Rune manifest (memory path, question blocks, files)
