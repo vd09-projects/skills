@@ -2,7 +2,7 @@
 
 Authority for SKILL.md's three-phase flow. SKILL.md summarizes; this file is the source of truth for discipline.
 
-Plan implements the handoff protocol as a producer with `producer_role: planner`. Protocol behavior is encoded inline below and in SKILL.md (the spec lives at `_shared/handoff-protocol.md` for skill authors; not loaded at runtime).
+Mimir implements the handoff protocol as a producer with `producer_role: planner`. Protocol behavior is encoded inline below and in SKILL.md (the spec lives at `_shared/handoff-protocol.md` for skill authors; not loaded at runtime).
 
 ---
 
@@ -13,7 +13,7 @@ Goal: gather all context needed before asking the user anything. Cheap, always r
 **Load order (matters):**
 
 1. **CLAUDE.md** — project root. The only cross-skill context source. Read always if present. Contains project type, stack, conventions, domain rules, invariants, gotchas. If absent, note once: "No CLAUDE.md found — working on generic principles. Run `rune` to set up project context."
-2. **`.claude/skill-memory/plan/config.md`** — plan's own preferences. Fields: `default_depth`, `domain_expert_role`, `always_overlays`, `never_overlays`.
+2. **`.claude/skill-memory/mimir/config.md`** — Mimir's own preferences. Fields: `default_depth`, `domain_expert_role`, `always_overlays`, `never_overlays`.
 3. **`.claude/handoff/*.md`** — directory scan. Used for the Scope Collision Flow in Phase 2. Reading frontmatter only at this stage is fine (cheap).
 4. **`references/overlays/`** — directory listing only. Catalog membership defines which overlays exist. Do not read overlay file bodies yet — Phase 1 Overlay Selection reads each candidate's `## Triggers` section, then full body only for confirmed overlays.
 
@@ -21,7 +21,7 @@ Goal: gather all context needed before asking the user anything. Cheap, always r
 
 **Conflict rule:** if two sections of CLAUDE.md disagree on the same convention, surface explicitly. Never silently merge.
 
-**Plan reads no other skill's memory.** Per the agent-pattern in `_shared/agent-pattern.md`, cross-skill knowledge lives in CLAUDE.md (Claude Code platform convention) or in handoff artifacts. Plan never reaches into `.claude/skill-memory/{other-skill}/`.
+**Mimir reads no other skill's memory.** Per the agent-pattern in `_shared/agent-pattern.md`, cross-skill knowledge lives in CLAUDE.md (Claude Code platform convention) or in handoff artifacts. Mimir never reaches into `.claude/skill-memory/{other-skill}/`.
 
 ---
 
@@ -150,17 +150,17 @@ Goal: write a new file (or revise an existing one) in `.claude/handoff/` per the
 | Architecture plan with open questions or no clear recommendation | `none` (informational; user decides next step) |
 | Architecture plan with recommendation, no domain expert configured | `none` (user routes manually) |
 
-Plan never writes a consumer-skill name.
+Mimir never writes a consumer-skill name.
 
 ### Approval flow (MVP — manual)
 
-Plan writes `status: draft`. User must edit the artifact and change to `status: approved` before any consumer treats it as authoritative. No skill auto-flips. No slash command in v1.
+Mimir writes `status: draft`. User must edit the artifact and change to `status: approved` before any consumer treats it as authoritative. No skill auto-flips. No slash command in v1.
 
 ### Files are never deleted
 
 The protocol forbids a delete option. All prior artifacts stay in `.claude/handoff/` indefinitely. This is the audit trail.
 
-If a user wants to delete (sensitive data, accidental commit), they do it manually outside the protocol — plan never offers that path.
+If a user wants to delete (sensitive data, accidental commit), they do it manually outside the protocol — Mimir never offers that path.
 
 ### Anti-patterns
 
@@ -170,7 +170,7 @@ If a user wants to delete (sensitive data, accidental commit), they do it manual
 - **Plans without test strategy.** Test strategy must be named specifically. "Tests will be written" is not a strategy.
 - **Plans that span depths.** One artifact = one depth. Chain artifacts (architecture → task) by writing separate files.
 - **Naming a specific consumer skill in the artifact or output.** Use `consumer_role` only.
-- **Auto-approving.** Plan never writes `status: approved`.
+- **Auto-approving.** Mimir never writes `status: approved`.
 - **Silently overwriting an existing artifact.** Scope Collision Flow handles overlap. Updating an existing file requires user `[u]` choice.
 - **Offering a delete option.** Files preserved by protocol.
 - **Activating overlays without user confirmation.** Trigger match is a candidate, not a decision. Only `config.md`'s `always_overlays` bypasses the prompt.

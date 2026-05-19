@@ -30,7 +30,7 @@ skill (next in sequence)
 user: "implement TASK-0042 — add idempotent refund"
   ↓
 agent (coordinator.md)
-  ├─ Step 1: invoke plan skill
+  ├─ Step 1: invoke mimir skill
   │            → writes 20260520-143022-task-add-idempotent-refund.md (status: draft)
   │            → user approves manually (edits status: approved)
   ├─ Step 2: invoke task-manager skill
