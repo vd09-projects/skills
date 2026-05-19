@@ -13,9 +13,10 @@ Goal: agree on approach before spending time building. Output is a plan the user
 1. **Restate the problem** in one sentence — confirms understanding before proposing anything.
 2. **Proposed approach** — the structure: what components, what interfaces, where things live. Prose and optional diagrams. No pseudocode that looks like real code.
 3. **What's explicitly out of scope** — name it. Prevents scope creep during build. If there's a simpler version that handles 80% of the ask, name it as an option.
-4. **Risks and open questions** — what could go wrong, what needs a decision before building can start.
-5. **Test strategy** — specific: what test type covers what behavior. "Golden test against a fixed input/output pair" or "table-driven unit tests covering the five error paths" or "property test on the invariant that X + Y always equals Z." Not "I'll write some tests."
-6. **Decision marks** — if the plan establishes a non-obvious convention or makes a structural call the user should know about, mark it inline.
+4. **Success Metric** — quantified outcome that means this work succeeded post-deploy. Primary measure + observation window at minimum. Not "make it better". Not "tests pass" (that's intrinsic). "Auth error rate < 0.1% over 24h" or "checkout p95 < 500ms over 7d sustained" is. If an approved handoff artifact is in scope (Phase 0 found one), inherit the artifact's `## Success Metric` and do not re-state. Otherwise interrogate.
+5. **Risks and open questions** — what could go wrong, what needs a decision before building can start.
+6. **Test strategy** — specific: what test type covers what behavior. "Golden test against a fixed input/output pair" or "table-driven unit tests covering the five error paths" or "property test on the invariant that X + Y always equals Z." Not "I'll write some tests."
+7. **Decision marks** — if the plan establishes a non-obvious convention or makes a structural call the user should know about, mark it inline.
 
 **Plan mode rules:**
 
@@ -23,10 +24,12 @@ Goal: agree on approach before spending time building. Output is a plan the user
 - Every plan names the regression risk for changes near load-bearing code.
 - Plans that surface ambiguity block immediately rather than paper over it.
 - The plan is the thing being reviewed, not the implementation. If the user approves a plan and the build diverges from it, say so explicitly and explain why.
+- **Success Metric is required.** Empty metric = the work has no defined success. If the user cannot supply a quantified outcome AND no approved handoff covers it, terminate `Blocked — need input.` Do not paper over with "tests pass" or "feature works".
+- **When scope is too big for sindri plan mode to deliver a sensible metric** (multi-task initiative, cross-team, architectural choice between options, specialized concern requiring overlay discipline) — surface the mismatch and recommend mimir. Sindri plan mode is for single-task in-session work; broader scope is mimir's job.
 
 **Terminal states:**
-- `Plan ready.` — approach described, test strategy named, open questions surfaced. Waiting for approval.
-- `Blocked — need input.` — a question must be answered before a sensible plan is possible. State exactly what's needed and why it blocks.
+- `Plan ready.` — approach described, test strategy named, Success Metric stated (or inherited from handoff), open questions surfaced. Waiting for approval.
+- `Blocked — need input.` — a question must be answered before a sensible plan is possible (including: Success Metric unanswerable). State exactly what's needed and why it blocks.
 
 ---
 
@@ -81,6 +84,7 @@ Goal: answer a specific question or prove a concept is viable. Output is explora
 **Spike discipline:**
 
 - State the question being answered at the top. If the spike doesn't have a specific question, block and ask — unfocused spikes produce unactionable results.
+- **The spike question IS the Success Metric.** No separate Success Metric required — the answer to "can X be done in Y time?" or "does this library handle Z?" is the success criterion. Standard plan-mode Success Metric discipline does NOT apply to spike mode.
 - Write enough code to answer the question. No more. A spike is not a first draft of the feature.
 - Basic verification required: the spike runs, the happy path works, core error paths are exercised manually or with minimal tests. Full test suite not required.
 - Explicitly list what spike code is NOT doing: no error handling for edge cases, no performance tuning, no production config, no security review. The list is the spike's "debt" if the approach is adopted.

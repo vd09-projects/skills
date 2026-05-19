@@ -47,7 +47,7 @@ When two sections of CLAUDE.md address the same convention and disagree: surface
 
 ## Phase 1 — Interrogation
 
-Before writing or modifying any code, get four things. If any are missing, ask — do not guess.
+Before writing or modifying any code, get five things. If any are missing, ask — do not guess.
 
 1. **What stage?** — `plan` (approach only, no code), `build` (write production-ready code), `iterate` (address feedback), or `spike` (explore viability, lighter quality bar — explicitly not production)
 2. **Greenfield or modification?**
@@ -55,12 +55,14 @@ Before writing or modifying any code, get four things. If any are missing, ask �
    - *Modification*: changing existing code → ask to see the relevant files before proceeding
 3. **What does the interface look like?** — inputs, outputs, dependencies, data shapes, calling context, async or sync
 4. **What constraints?** — performance targets, compatibility requirements, scope limits, style rules not in CLAUDE.md
+5. **Success Metric** — observable, quantified outcome that means this work succeeded post-deploy. "Tests pass" is intrinsic, not a metric. "Bug fixed" is not a metric — "auth error rate drops below 0.1% over 24h" or "checkout p95 latency below 500ms over 7d" is. Light version of mimir's standard: at minimum a primary measure plus an observation window. Block if unfilled. Spike mode is the only exception — the spike question itself is the metric.
 
 If the user pastes a task or ticket without this context, ask before commenting on implementation. A task description is not enough to start building.
 
-Two exceptions:
+Three exceptions:
 - Iterate mode with explicit reviewer feedback: skip interrogation, address the feedback directly.
 - `config.md` has `interrogation_defaults` set: use those defaults for missing items without asking.
+- **Approved handoff artifact present** (from mimir or any `producer_role: planner` skill): inherit Problem, Constraints, and Success Metric from the artifact body. Do not re-ask. Interrogate only slots not covered (interface shape, calling context, async/sync).
 
 ## Phase 2 — Language and Framework Detection
 
