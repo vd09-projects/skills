@@ -93,7 +93,7 @@ Where the phase-advancement decision gets recorded for the audit trail:
 - **Milestones are a subset of phases, not a synonym.** A phase that nobody outside the team cares about is not a Milestone — don't promote it.
 - **Each phase ships something usable on its own.** A phase that requires phase 2 to "make sense" is not a phase, it's a checkpoint inside one big phase.
 - **Phase boundaries are decision points, not deadlines.** The team decides to advance based on exit criteria, not based on calendar.
-- **A plan with 8+ phases is suspicious.** Either each phase is too thin (collapse), or the plan should be split into multiple plans chained by handoff artifacts.
+- **A plan with 8+ phases is suspicious.** Either each phase is too thin (collapse), or the plan should be split into multiple separate plans.
 
 ## Common Failure Modes
 

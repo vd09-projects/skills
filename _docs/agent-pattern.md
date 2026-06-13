@@ -231,4 +231,4 @@ For a working example of this pattern at scale, see:
 - `workflows/sessions/*.json` — per-session state files
 - `workflows/handoffs/schema.md` — that project's handoff schema (predates this generic protocol)
 
-That project's handoff schema is JSON-based and project-specific. The generic protocol in `handoff-protocol.md` (same dir) is markdown-based and cross-project. Choose JSON for tightly-coupled agent flows; choose markdown for human-readable cross-skill exchange. They can coexist — agents may emit both formats for different purposes.
+That project's handoff schema is JSON-based and project-specific. The generic protocol in `skald/references/handoff-protocol.md` is markdown-based and cross-project. Choose JSON for tightly-coupled agent flows; choose markdown for human-readable cross-skill exchange. They can coexist — agents may emit both formats for different purposes.

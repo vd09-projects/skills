@@ -2,7 +2,7 @@
 
 Authority for SKILL.md's three-phase flow. SKILL.md summarizes; this file is the source of truth for discipline.
 
-Mimir implements the handoff protocol as a producer with `producer_role: planner`. Protocol behavior is encoded inline below and in SKILL.md (the spec lives at `_shared/handoff-protocol.md` for skill authors; not loaded at runtime).
+Mimir produces natural markdown output, emits it to the caller, and stops. It does not write files.
 
 ---
 
@@ -14,14 +14,14 @@ Goal: gather all context needed before asking the user anything. Cheap, always r
 
 1. **CLAUDE.md** — project root. The only cross-skill context source. Read always if present. Contains project type, stack, conventions, domain rules, invariants, gotchas. If absent, note once: "No CLAUDE.md found — working on generic principles. Run `rune` to set up project context."
 2. **`.claude/skill-memory/mimir/config.md`** — Mimir's own preferences. Fields: `default_depth`, `domain_expert_role`, `always_overlays`, `never_overlays`.
-3. **`.claude/handoff/*.md`** — directory scan. Used for the Scope Collision Flow in Phase 2. Reading frontmatter only at this stage is fine (cheap).
+3. **Prior artifacts in a scope dir** — ONLY when the caller passes a scope dir path. Read top-level markdown files in that dir. Read-only. If no scope dir is supplied, skip.
 4. **`references/overlays/`** — directory listing only. Catalog membership defines which overlays exist. Do not read overlay file bodies yet — Phase 1 Overlay Selection reads each candidate's `## Triggers` section, then full body only for confirmed overlays.
 
 **One read per session per file.** Do not re-read mid-conversation unless the user signals a context change.
 
 **Conflict rule:** if two sections of CLAUDE.md disagree on the same convention, surface explicitly. Never silently merge.
 
-**Mimir reads no other skill's memory.** Per the agent-pattern in `_shared/agent-pattern.md`, cross-skill knowledge lives in CLAUDE.md (Claude Code platform convention) or in handoff artifacts. Mimir never reaches into `.claude/skill-memory/{other-skill}/`.
+**Mimir reads no other skill's memory.** Cross-skill knowledge lives in CLAUDE.md. Mimir never reaches into `.claude/skill-memory/{other-skill}/`.
 
 ---
 
@@ -88,79 +88,26 @@ Be specific. "Blocked — need more context" is wrong. "Blocked — need to know
 
 ---
 
-## Phase 2 — Produce Artifact
+## Phase 2 — Produce Output
 
-Goal: write a new file (or revise an existing one) in `.claude/handoff/` per the handoff protocol and route via `consumer_role`.
+Goal: render natural markdown output that satisfies the title format. Return to caller. Do NOT write files. Do NOT emit YAML frontmatter.
+
+### Output format
+
+Title format is mimir's output contract. First H1 must follow one of these shapes.
+
+- Architecture plans: `# Architecture: {one-line scope title}`
+- Task plans: `# Task plan: {one-line scope title}`
+
+If a different ArtifactKind label is more accurate (rare), document it in mimir's references and update the output format documentation. Default is the two labels above.
 
 ### Steps
 
-1. **Compute slug.** Derive from scope: kebab-case, lowercase, ≤40 chars, alphanumeric + dashes only. Examples: `auth-redesign`, `payment-refund-flow`, `rate-limiter-redis`.
+1. **Render body** using the template inlined in the matching level reference (`architecture.md` or `task.md`). For each active overlay (in catalog order — see SKILL.md `Overlay Merge Order`), append its `## Template Sections` at the `<!-- OVERLAY INSERTION POINT -->` marker in the base template. Strip the marker comment from the final output. If two overlays contribute a section with the same heading, merge content under one heading — do not duplicate.
 
-2. **Scope Collision Flow** (per protocol). Scan `.claude/handoff/*.md`. For each file, read frontmatter (stop after the `---` block). Find matches where:
-   - `status` is `draft` or `approved` (not `consumed`), AND
-   - `scope_hint` overlaps the new scope (string similarity, exact slug match, or human judgment), AND
-   - `plan_type` matches.
+2. **Confirm title** follows the format. If active overlays exist, include a `**Overlays:** {slug-1}, {slug-2}` line directly below the title if overlays are active. Omit the line if no overlays.
 
-   If matches found, prompt user with this menu:
-
-   ```
-   Existing handoff(s) cover similar scope:
-
-     [1] {filename}
-         status: {status} | scope: {scope_hint}
-     ...
-
-   [u] update existing (pick by number)
-   [n] create new alongside (will be a fresh file; old ones preserved)
-   [c] cancel
-   ```
-
-   Default: `c` (cancel — user reviews and decides). Options: `u` (update existing — pick by number), `n` (create new alongside), `c` (cancel). There is NO delete option. All artifacts preserved.
-
-   If user picks `u`: open the chosen file, regenerate body, preserve `created` and original `status`, rewrite.
-
-   If user picks `n` or no collisions found: proceed to step 3.
-
-3. **Compute filename.** `{YYYYMMDD-HHMMSS}-{plan_type}-{slug}.md` using UTC timestamp at the moment of writing. Filename collisions (same timestamp + slug) extremely unlikely; if they occur, append `-2`, `-3`, etc.
-
-4. **Render body** using the template inlined in the matching level reference (`architecture.md` or `task.md`). For each active overlay (in catalog order — see SKILL.md `Overlay Merge Order`), append its `## Template Sections` at the `<!-- OVERLAY INSERTION POINT -->` marker in the base template. Strip the marker comment from the final artifact. If two overlays contribute a section with the same heading, merge content under one heading — do not duplicate.
-
-5. **Compose frontmatter** per the protocol schema:
-   - `artifact_type: handoff`
-   - `artifact_version: 1`
-   - `producer_role: planner`
-   - `consumer_role`: derived per the table in SKILL.md
-   - `plan_type`: from detected level
-   - `overlays`: YAML list of active overlay slugs in catalog order. Empty list `[]` if none.
-   - `created`: ISO-8601 UTC, matches the timestamp in the filename
-   - `status: draft` (always; user flips to `approved` manually)
-   - `scope_hint`: one-line summary
-   - `slug`: matches filename slug (redundant for safety against renames)
-
-6. **Write file** at `.claude/handoff/{filename}`.
-
-7. **State terminal status** with filename included so user knows what to approve.
-
-### `consumer_role` derivation
-
-| Plan content signal | → `consumer_role` |
-|---|---|
-| Task-level plan with clear ordered steps and constraints met | `implementation` |
-| Architecture plan with recommendation AND `domain_expert_role: present` in config | `domain-expert` |
-| Architecture plan with open questions or no clear recommendation | `none` (informational; user decides next step) |
-| Architecture plan with recommendation, no domain expert configured | `none` (user routes manually) |
-
-Mimir never writes a consumer-skill name.
-
-### Approval flow (MVP — manual)
-
-Mimir writes `status: draft`. User must edit the artifact and change to `status: approved` before any consumer treats it as authoritative. No skill auto-flips. No slash command in v1.
-
-### Files are never deleted
-
-The protocol forbids a delete option. All prior artifacts stay in `.claude/handoff/` indefinitely. This is the audit trail.
-
-If a user wants to delete (sensitive data, accidental commit), they do it manually outside the protocol — Mimir never offers that path.
+3. **Return** the full markdown output to the caller. No YAML. No frontmatter. No `status` field. No filename computation.
 
 ### Anti-patterns
 
@@ -168,11 +115,11 @@ If a user wants to delete (sensitive data, accidental commit), they do it manual
 - **Burying constraints.** Constraints get their own section, always.
 - **Single-option "comparison".** If only one option exists, it's not an architecture plan — escalate to "Needs discussion." or convert to task plan.
 - **Plans without test strategy.** Test strategy must be named specifically. "Tests will be written" is not a strategy.
-- **Plans that span depths.** One artifact = one depth. Chain artifacts (architecture → task) by writing separate files.
-- **Naming a specific consumer skill in the artifact or output.** Use `consumer_role` only.
-- **Auto-approving.** Mimir never writes `status: approved`.
-- **Silently overwriting an existing artifact.** Scope Collision Flow handles overlap. Updating an existing file requires user `[u]` choice.
-- **Offering a delete option.** Files preserved by protocol.
+- **Plans that span depths.** One artifact = one depth. Chain by emitting separate outputs.
+- **Naming a specific consumer skill in the body.** Mimir doesn't know consumers.
+- **Emitting YAML frontmatter, role declarations, version numbers, or `status` fields.** Mimir produces title + body, full stop.
+- **Writing files of any kind.** Mimir does not write files.
+- **Computing filenames, timestamps, slugs, or versions.**
 - **Activating overlays without user confirmation.** Trigger match is a candidate, not a decision. Only `config.md`'s `always_overlays` bypasses the prompt.
 - **Pre-loading overlay file bodies before triage.** Read only `## Triggers` until candidate set is confirmed. Saves context window on irrelevant overlays.
 - **Inlining overlay content into the base level reference.** Overlays stay in `references/overlays/`. Do not absorb them into `architecture.md` / `task.md` — that re-creates the generic-template trap.
@@ -181,8 +128,6 @@ If a user wants to delete (sensitive data, accidental commit), they do it manual
 
 ### Terminal states (full definitions)
 
-- **`Plan ready.`** Artifact written at known filename. All required frontmatter present. `consumer_role` set. User reads artifact, flips `status: draft` → `approved` when ready, orchestrator (or user) invokes the matching consumer.
-- **`Needs discussion.`** Options laid out but no recommendation possible without user judgment call. Artifact still written with `consumer_role: none` (captures the analysis). User decides path forward.
-- **`Blocked — need input.`** No artifact written. State exactly what's needed and why it blocks.
-
-Terminal output always names the filename so the user knows what to approve.
+- **`Plan ready.`** Output emitted to caller. User approves when ready.
+- **`Needs discussion.`** Options laid out but no recommendation possible without user judgment call. User decides path forward.
+- **`Blocked — need input.`** No output emitted. State exactly what's needed and why it blocks.

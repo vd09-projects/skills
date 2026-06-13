@@ -31,23 +31,26 @@ Get these before producing artifact. If missing, ask.
 
 ## Output template
 
-Render this into `.claude/handoff/{YYYYMMDD-HHMMSS}-architecture-{slug}.md` with the frontmatter shown below prepended.
+Mimir emits this as its natural output. No frontmatter, no structured metadata — plain markdown.
+
+**Title format (required first H1):**
+
+```
+# Architecture: {one-line scope title}
+```
+
+The `Architecture` prefix identifies the plan kind. The portion after the colon names the scope.
+
+If active overlays exist for the plan, prepend a small metadata block immediately under the title (optional, human-readable):
+
+```
+**Overlays:** data-migration, cross-team
+```
 
 ```markdown
----
-artifact_type: handoff
-artifact_version: 1
-producer_role: planner
-consumer_role: {domain-expert | none}
-plan_type: architecture
-overlays: {YAML list of active overlay slugs, e.g. [data-migration, cross-team]. Empty list [] if none}
-created: {ISO-8601 UTC, matches filename timestamp}
-status: draft
-scope_hint: {one-line summary of what this plan covers}
-slug: {kebab-slug, matches filename}
----
+# Architecture: {one-line scope title}
 
-# {Short title — what is being decided}
+**Overlays:** {comma-separated active overlay slugs, omit line if none}
 
 ## Problem
 

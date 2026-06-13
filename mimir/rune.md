@@ -28,14 +28,14 @@ deferrable:
 
 ## notes
 
-Mimir implements the generic handoff protocol (spec at `_shared/handoff-protocol.md`
-in the skills repo — documentation for skill authors, not loaded at runtime).
-Mimir declares `producer_role: planner` and never names a specific consumer skill.
-Protocol behavior is encoded inline in Mimir's SKILL.md.
+Mimir produces natural markdown output and stops. It does not write files,
+does not emit structured metadata, does not manage scopes or filenames.
+Mimir's output format is its own published interface — see Mimir's SKILL.md
+Output section.
 
 Mimir reads project context only from `CLAUDE.md` — never reaches into other
 skills' memory directories. Cross-skill context (domain rules, conventions,
 architecture, gotchas) lives in CLAUDE.md sections written by Rune.
 
-Mimir does not invoke other skills. An orchestrator (agent in `.claude/agents/`,
-or the user) sequences which skill runs after Mimir produces its artifact.
+Mimir does not invoke other skills. Caller sequences whatever happens after
+Mimir produces its plan.

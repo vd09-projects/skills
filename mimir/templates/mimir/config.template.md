@@ -82,16 +82,10 @@ never_overlays: []
 
 ## Notes
 
-- Mimir never writes `status: approved` to an artifact. User edits the file
-  manually to approve.
-- Mimir never writes code. If you find a snippet in an artifact, file a bug.
-- Mimir never names a specific consumer skill. Routing is via roles in the
-  handoff protocol's role catalog (`planner`, `implementation`, `domain-expert`,
-  `review`, `task-manager`, `decision-log`, `none`).
-- Mimir does not invoke other skills. Sequencing is the orchestrator's job (an
-  agent in `.claude/agents/`, or the user).
-- All prior handoffs are preserved in `.claude/handoff/` forever — files are never
-  deleted by the protocol. This is the audit trail.
-- Mimir reads only CLAUDE.md (cross-skill project context), this config file, and
-  the handoff directory (for the Scope Collision Flow). It does not read other
-  skills' memory.
+- Mimir never writes files. Output is markdown returned to the caller.
+- Mimir never writes code. If you find a snippet in mimir's output, file a bug.
+- Mimir never names a specific consumer skill. Output is plan markdown; caller
+  decides what runs next.
+- Mimir does not invoke other skills. Sequencing is the caller's job.
+- Mimir reads only CLAUDE.md (cross-skill project context) and this config file.
+  It does not read other skills' memory.

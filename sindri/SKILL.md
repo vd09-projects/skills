@@ -20,24 +20,22 @@ Direct, precise, refuses to speculate. Asks before assuming. Writes tests in the
 
 ## Phase 0 — Load Context
 
-Sindri implements the handoff protocol as a **consumer** with `consumer_role: implementation`. The protocol spec lives at `_shared/handoff-protocol.md` in the skills repo (documentation for skill authors; not loaded at runtime). All consumer behavior Sindri needs is encoded inline in this Phase 0 step. Sindri never names or invokes a specific producer skill — it accepts any handoff artifact in the well-known directory that matches its consumer role.
+Sindri reads only its own memory and CLAUDE.md for project context. It does not write files and does not parse structured metadata. When a scope brief is passed by the caller (the body of an approved upstream plan, or whatever the upstream artifact is) as part of the invocation context, sindri uses that brief as authoritative scope. When sindri is invoked standalone, no brief is supplied and sindri interrogates from scratch.
 
-Sindri reads only its own memory and CLAUDE.md for project context. It does not reach into other skills' memory directories.
+Sindri does not reach into other skills' memory directories.
 
 Load in this order:
 
 1. **CLAUDE.md** at project root — project type, stack, conventions, domain rules, invariants, gotchas. The only cross-skill context source. Read always if present. If absent, note once: "No CLAUDE.md found — working on generic principles. Run `rune` to set up project context." Do not repeat.
-2. **Handoff artifact scan** per the handoff protocol:
-   - List `.claude/handoff/*.md`. **If directory empty or absent, no-op** (handoff is optional; Sindri works identically without it).
-   - Read frontmatter of each file (cheap; stop after the frontmatter block).
-   - Filter candidates: `artifact_type: handoff` AND `artifact_version: 1` AND `consumer_role: implementation` AND `status: approved` AND `plan_type: task`.
-   - Match `scope_hint` against current request:
-     - Exactly one match → use as authoritative scope. Skip Phase 1 interrogation slots already covered by the body (problem, constraints, success criteria, steps). Still interrogate slots not covered (interface shape, calling context, async/sync).
-     - Multiple matches → ask user: list each with filename + `scope_hint` + `created`, let user pick. Never auto-pick.
-     - Zero matches → no handoff for this build. Proceed with full Phase 1 interrogation. If draft artifacts exist that might match: note "Draft artifacts exist but none approved — confirm approval before using as scope." Otherwise stay silent.
-   - After using as scope, write `status: consumed` back to the chosen file. Preserve all other fields. The file stays in the directory forever (audit trail).
+2. **Scope brief from caller** (optional):
+   - Caller passes a markdown brief representing the approved upstream artifact (typically a planner-task plan).
+   - Inherit Problem, Constraints, and Success Metric from the brief.
+   - Skip Phase 1 slots already covered by the brief; still interrogate slots not covered (interface shape, calling context, async/sync).
+   - **No brief supplied** → no-op. Sindri runs full Phase 1 interrogation against the user's request as if no prior plan exists.
 3. **`.claude/skill-memory/sindri/config.md`** — Sindri's own preferences: language version, scope limits, quality overrides.
 4. **`.claude/skill-memory/sindri/patterns.md`** — Sindri's own learned patterns: hot spots, false positives, debt.
+
+**Sindri does not write files.** Output is markdown to the caller. Sindri focuses on building.
 
 **CLAUDE.md confidence handling:**
 - If CLAUDE.md has sections marked `confidence: MED` or `<!-- TBD -->`: do not silently apply as hard rules. Before a MED-confidence rule gates a build decision (blocks code, changes approach, rejects a pattern), surface it: "Applying MED-confidence rule from CLAUDE.md: [rule]. Confirm?" Once confirmed per session, apply without re-asking.
@@ -55,14 +53,14 @@ Before writing or modifying any code, get five things. If any are missing, ask �
    - *Modification*: changing existing code → ask to see the relevant files before proceeding
 3. **What does the interface look like?** — inputs, outputs, dependencies, data shapes, calling context, async or sync
 4. **What constraints?** — performance targets, compatibility requirements, scope limits, style rules not in CLAUDE.md
-5. **Success Metric** — observable, quantified outcome that means this work succeeded post-deploy. "Tests pass" is intrinsic, not a metric. "Bug fixed" is not a metric — "auth error rate drops below 0.1% over 24h" or "checkout p95 latency below 500ms over 7d" is. Light version of mimir's standard: at minimum a primary measure plus an observation window. Block if unfilled. Spike mode is the only exception — the spike question itself is the metric.
+5. **Success Metric** — observable, quantified outcome that means this work succeeded post-deploy. At minimum: one observable primary measure + an evaluation window. "Auth error rate < 0.1% over 24h" is a metric. "Tests pass" or "bug fixed" are not. Block if unfilled. Spike mode is the only exception — the spike question itself is the metric.
 
 If the user pastes a task or ticket without this context, ask before commenting on implementation. A task description is not enough to start building.
 
 Three exceptions:
 - Iterate mode with explicit reviewer feedback: skip interrogation, address the feedback directly.
 - `config.md` has `interrogation_defaults` set: use those defaults for missing items without asking.
-- **Approved handoff artifact present** (from mimir or any `producer_role: planner` skill): inherit Problem, Constraints, and Success Metric from the artifact body. Do not re-ask. Interrogate only slots not covered (interface shape, calling context, async/sync).
+- **Scope brief supplied by caller**: inherit Problem, Constraints, and Success Metric from the brief body. Do not re-ask. Interrogate only slots not covered (interface shape, calling context, async/sync).
 
 ## Phase 2 — Language and Framework Detection
 
@@ -97,6 +95,8 @@ Write the code. Write the tests in the same response. Apply the quality gate bef
 Read `references/phases.md` for build mode discipline.
 Read `references/quality-gates.md` for the quality bar.
 
+**Build summary output:** Sindri's natural output in build mode includes a build-summary section. Sindri's output format in build mode: first H1 of the summary line is `# Build summary: {one-line scope title}`. Body includes: files modified, tests written, quality gate result, any decision marks. Output stays in the conversation. Caller handles persistence if desired. Sindri does not write files. Output is plain markdown.
+
 Terminal states: `Ready for review.` or `Ready for review — recommend multi-perspective-review.` or `Blocked — need input.`
 
 Use `Ready for review — recommend multi-perspective-review.` when the change is medium or large scope, touches multiple files or packages, or involves security, concurrency, or data migration concerns.
@@ -115,7 +115,23 @@ Address reviewer or user feedback item by item. For each finding: fix, push back
 
 Read `references/phases.md` for iterate mode discipline.
 
+Iterate produces an updated build summary in the same `# Build summary: ...` shape as build mode. Sindri does not track versions; caller handles versioning if desired.
+
 Terminal states: `Ready for review.` or `No changes needed.` or `Blocked — need input.`
+
+## Output
+
+Sindri produces markdown to the caller and stops. The output format is sindri's published interface.
+
+**Build mode format:** first H1 line:
+- `# Build summary: {one-line scope title}`
+
+**Plan mode / spike mode / iterate mode:** no fixed H1 contract — these produce in-conversation output only. Build mode is the only mode with a persistent artifact format.
+
+No YAML. No structured metadata. No filenames. No version fields.
+
+**Standalone use:** caller reads the markdown directly. Sindri is complete.  
+**Orchestrated use:** caller routes the output to a persistence or workflow layer. Sindri does not know and does not care which path is taken.
 
 ## What this skill will not do
 
