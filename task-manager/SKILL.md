@@ -27,12 +27,32 @@ All task data lives in `tasks/` at the project root (or a path configured by the
 |---|---|
 | `tasks/BACKLOG.md` | Single source of truth — prioritized tasks grouped by status |
 | `tasks/TASK-LOG.md` | Append-only changelog of every task operation with timestamps |
+| `tasks/RUNE.md` | Repo-wide rune-mode config (default mode, sizing rubric, exceptions) |
 | `tasks/archive/YYYY-MM.md` | Monthly archives for completed and cancelled tasks |
 
 If the `tasks/` directory doesn't exist yet, initialize it from the templates bundled alongside
 this SKILL.md file (in `templates/` within this skill's own directory — NOT the project root).
 Copy the template files into the project's `tasks/` directory. Don't symlink — the project's
 copies will be edited directly.
+
+**Reference files (loaded on demand, not auto-read):**
+
+| File | Load when |
+|---|---|
+| `references/RUBRIC.md` | Mode 8 Rune does anything beyond default-and-go; Mode 7 Decompose-merge checks a cluster; Mode 6 Review backfills missing classes |
+
+Reference files live alongside this SKILL.md inside the skill directory. They are not part of
+`tasks/`. Read them explicitly when the procedure says to — don't preload.
+
+**Setup-time prompt (run once on initialization):** After copying templates, ask the user:
+
+> "What's this repo's default coding mode?
+> - **dev** — tasks are 3-4 day chunks that ship meaningful problem slices
+> - **vibe** — tasks are 1-subchunk atomic edits, no scaffolding, no speculative interfaces
+> - **mixed** — both, classify per task"
+
+Write the answer into `tasks/RUNE.md` under `default_mode:`. This default is inherited by new
+tasks unless the user overrides per-task. If `mixed`, the Rune mode (below) asks every time.
 
 ## Task Format
 
@@ -43,6 +63,7 @@ Every task in BACKLOG.md is a structured markdown block:
 
 - **Status:** todo | in-progress | blocked | done | cancelled
 - **Priority:** critical | high | medium | low
+- **Rune:** dev | vibe | research | analysis
 - **Created:** YYYY-MM-DD (Session NNN if session-continuity is linked, otherwise just the date)
 - **Source:** session | decision | user | discovery
 - **Blocked by:** [TASK-XXXX] or free-text reason (only when status is blocked)
@@ -68,7 +89,7 @@ Tasks are organized into four sections, in this order. Priority ordering within 
 
 ```
 # Project Task Backlog
-**Last updated:** YYYY-MM-DD | **Open tasks:** N | **Next up:** TASK-NNNN
+**Last updated:** YYYY-MM-DD | **Open tasks:** N | **Next up:** TASK-NNNN | **Runes:** D dev / V vibe / R research / A analysis
 
 ---
 
@@ -81,11 +102,12 @@ Tasks are organized into four sections, in this order. Priority ordering within 
 _Completed and cancelled tasks are moved to tasks/archive/YYYY-MM.md_
 ```
 
-**Always update the header stats** (open count, next-up ID, last-updated date) after any mutation.
+**Always update the header stats** (open count, next-up ID, last-updated date, rune distribution)
+after any mutation.
 
 ## Modes
 
-This skill operates in seven modes. Detect the mode from the user's intent — they won't always
+This skill operates in eight modes. Detect the mode from the user's intent — they won't always
 name the mode explicitly.
 
 ---
@@ -98,19 +120,23 @@ request that implies a new work item.
 **Steps:**
 
 1. Determine the next sequential task ID.
-2. Infer or ask for: title, priority, context, acceptance criteria. If the user gives a one-liner
+2. **Run Rune classification (Mode 8).** Pick `dev` / `vibe` / `research` / `analysis` from
+   `tasks/RUNE.md` default + the request shape. If classification is ambiguous, ask. If the
+   proposed scope contradicts the chosen rune (e.g. user says "vibe" but task is "design DataProvider
+   interface"), refuse and propose the right rune — usually `research`, `analysis`, or `dev`.
+3. Infer or ask for: title, priority, context, acceptance criteria. If the user gives a one-liner
    like `task: handle nil pointer in ParseCandle`, that's enough — infer medium priority, mark
    source as `session`, write a minimal context line from conversation, and add a single acceptance
    criterion. Speed matters here; don't interrupt flow.
-3. Add the task to the appropriate section of BACKLOG.md based on priority:
+4. Add the task to the appropriate section of BACKLOG.md based on priority:
    - critical/high → top of "Up Next" (or "In Progress" if user says they're starting it now)
    - medium → middle of "Up Next"
    - low → "Todo (Backlog)"
-4. Append a creation entry to TASK-LOG.md:
+5. Append a creation entry to TASK-LOG.md:
    ```
-   | YYYY-MM-DD HH:MM | TASK-NNNN | created | priority: X, source: Y | <optional note> |
+   | YYYY-MM-DD HH:MM | TASK-NNNN | created | priority: X, rune: Y, source: Z | <optional note> |
    ```
-5. Update BACKLOG.md header stats.
+6. Update BACKLOG.md header stats.
 
 **Duplicate check:** Before creating, scan existing tasks for similar titles or context. If a
 plausible duplicate exists, surface it: "This looks similar to TASK-0023 — is this a duplicate or
@@ -245,6 +271,12 @@ The user's explicit prioritization always wins. Suggest but never silently overr
 3. Proactively flag issues:
    - **Stale in-progress:** In-progress for 3+ sessions or 7+ days without update.
    - **Missing acceptance criteria:** Tasks with no criteria defined.
+   - **Missing Rune classification:** Tasks created before Rune was adopted, or tasks where the
+     field is absent. Load `references/RUBRIC.md`, then prompt the user to backfill in a single
+     batch. Suggest a class per task from its context; user confirms or edits.
+   - **Undersized cluster:** 2+ adjacent `vibe` tasks under the same parent or touching the same
+     module that together fit one `dev` chunk. Load `references/RUBRIC.md` for the cluster check,
+     then flag and offer Decompose-merge (see Mode 7).
    - **Large backlog:** If open tasks exceed 30, suggest grooming.
    - **Blocked chains:** If A is blocked by B which is blocked by C, show the full chain.
 
@@ -252,21 +284,79 @@ The user's explicit prioritization always wins. Suggest but never silently overr
 
 ### 7. Decompose
 
-**Triggers:** "break down X", "X is too big", "decompose X", "split X into subtasks"
+**Triggers:** "break down X", "X is too big", "decompose X", "split X into subtasks", "merge X
+and Y", "X and Y are too small", "fold X into Y"
 
-**Steps:**
+This mode is bidirectional: it splits oversized tasks AND merges undersized siblings. The same
+rune sizing rubric drives both directions.
+
+**Split flow (oversized → subtasks):**
 
 1. Read the target task's full block.
 2. Propose a breakdown: 2-5 smaller, independently actionable subtasks, each with a title,
-   suggested priority, and brief context.
+   suggested priority, suggested rune class, and brief context.
 3. Present to user for approval/modification.
 4. For each approved subtask, create a new task using the Create flow. Each subtask gets:
    - A reference to the parent: `**Parent:** [TASK-NNNN]`
    - Source: same as parent
    - Priority: inherited from parent unless user overrides
+   - Rune: classified per subtask — a `dev` parent often splits into mixed `vibe` + `research`
+     children
 5. Update the parent task's Notes field with a list of child task IDs.
 6. Max 1 level of decomposition. If a subtask needs further splitting, it becomes an independent
    task with a reference — not a grandchild.
+
+**Merge flow (undersized → one task):**
+
+1. Load `references/RUBRIC.md` for the cluster-sizing criteria. Identify candidate cluster: 2+ tasks
+   that share a parent, touch the same module, or were seeded from the same architectural noun, AND
+   pass all four cluster-merge checks in the rubric.
+2. Propose the merged task: combined title, union of acceptance criteria, rune `dev`, priority
+   = max of children's.
+3. Present to user. If approved:
+   - Create the merged task via Create flow.
+   - Cancel each child with reason `merged into TASK-NNNN`.
+   - Append merge entries to TASK-LOG.md.
+4. Refuse to merge across reviewable boundaries — if children already passed review or shipped
+   commits, do not retroactively merge; just note the cluster in the merged task's Notes.
+
+---
+
+### 8. Rune
+
+**Triggers:** runs automatically as Step 2 of Create. Also fires standalone on "classify X",
+"is this vibe or dev?", "rune for TASK-NNNN", and during Review when backfilling missing classes.
+
+**Purpose:** size-and-shape gate. Forces every task to declare what kind of work it is BEFORE it
+inherits the orchestration tax. Closes the gap between architecture-driven seeding and
+effort-based ticket sizing.
+
+**The four runes (one-line each):**
+
+- **dev** — big problem-slice, 3-4 day chunk, may include scaffolding.
+- **vibe** — one subchunk, atomic diff, no interface design.
+- **research** — unknown facts, bounded timebox, no shipped code.
+- **analysis** — unknown best approach, bounded timebox, no shipped code.
+
+**Decision flow:**
+
+1. Read repo default from `tasks/RUNE.md` `default_mode:`. If `dev` or `vibe`, that's the starting
+   guess. If `mixed`, ask.
+2. If the starting guess matches the obvious shape of the task → use it. Done.
+3. If the requested rune contradicts the proposed scope, OR the user explicitly asks "is this vibe
+   or dev?", OR Decompose-merge needs the cluster check, OR Review is backfilling a batch:
+   **Read `references/RUBRIC.md`** for the full sizing table, override triggers, refusal cases,
+   and cluster-merge criteria. Apply those rules.
+4. Update the task's `Rune:` field. On standalone reclassify, append to TASK-LOG.md:
+   ```
+   | YYYY-MM-DD HH:MM | TASK-NNNN | reclassified | old → new rune, reason | |
+   ```
+5. If reclassifying to `research` or `analysis`, also strip production-code acceptance criteria
+   and replace them with research/analysis deliverables.
+
+**Refusal short-form (no rubric read needed):** if user requests `vibe` but the work is interface
+design, scaffolding, or open-ended exploration, refuse: "That's not vibe — it's
+`research`/`analysis`/`dev`. Reclassify or rescope." Don't silently downgrade.
 
 ---
 
@@ -281,6 +371,10 @@ to medium — it's the safest bet and avoids priority inflation.
 | **high** | Important for the current phase. Do before new features. | Implementing a core component, significant bug, completing an in-progress feature. |
 | **medium** | Valuable but not blocking. Default for most tasks. | Edge-case tests, better error messages, refactoring for clarity. |
 | **low** | Nice to have. Do when there's time. | Doc improvements, non-critical perf optimizations, speculative features. |
+
+**Priority vs Rune — they answer different questions.** Priority = *how urgent*. Rune = *what
+shape of work*. A `critical vibe` task (urgent one-line bugfix) and a `low dev` task (nice-to-have
+3-day feature) are both legal. Never collapse the two axes.
 
 ---
 

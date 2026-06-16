@@ -9,8 +9,9 @@ them, tracks their status, and always has an answer to **"What should I work on 
 
 - A prioritized backlog in plain markdown (`tasks/BACKLOG.md`)
 - An append-only changelog (`tasks/TASK-LOG.md`)
+- A rune-mode config (`tasks/RUNE.md`) — sizing rubric + repo default
 - Monthly archives for completed work (`tasks/archive/YYYY-MM.md`)
-- Seven operating modes: Create, Harvest, Next, Status, Prioritize, Review, Decompose
+- Eight operating modes: Create, Harvest, Next, Status, Prioritize, Review, Decompose, Rune
 
 ## What this is NOT
 
@@ -50,6 +51,7 @@ your-project/
 ├── tasks/                          ← Your project's task data (created on first use)
 │   ├── BACKLOG.md
 │   ├── TASK-LOG.md
+│   ├── RUNE.md
 │   └── archive/
 └── ...
 ```
@@ -119,7 +121,8 @@ Skill: "TASK-0050 is 'Implement full backtesting engine'. Proposed breakdown:
 | **Status** | "mark X as done", "X is blocked" | Updates status, moves between sections, archives |
 | **Prioritize** | "reprioritize", "move X above Y" | Changes priority level or positional order |
 | **Review** | "show backlog", "how many tasks?" | Filtered/full views with summary stats |
-| **Decompose** | "break down X", "X is too big" | Splits a task into 2-5 subtasks (max 1 level) |
+| **Decompose** | "break down X", "X is too big", "merge X and Y" | Splits oversized tasks OR merges undersized siblings — both directions use the rune sizing rubric |
+| **Rune** | "classify X", "is this vibe or dev?", auto-runs in Create | Sizes the task: `dev` (3-4 day chunk), `vibe` (1 subchunk, no scaffolding), `research` (unknown), `analysis` (best approach unclear) |
 
 ## Integration with Other Skills
 
@@ -139,6 +142,19 @@ All integrations are optional — task-manager works standalone.
 | **high** | Important for current phase. Before new features. |
 | **medium** | Valuable but not blocking. Default for most tasks. |
 | **low** | Nice to have. Do when there's time. |
+
+## Rune Classes
+
+Rune answers a different question than priority. Priority = how urgent. Rune = what shape of work.
+
+| Rune | What it is | Sizing | Forbidden |
+|------|------------|--------|-----------|
+| **dev** | Big problem-slice. Ships end-to-end. May include interfaces, scaffolding, multi-file refactor. | 3-4 days. | Splitting into vibe siblings just to dodge orchestration tax. |
+| **vibe** | One subchunk of a known problem. Atomic concrete edit. | Hours, one focused diff. | Designing interfaces, scaffolding, speculative abstractions. If task is interface-creation, it is not vibe. |
+| **research** | Unknown — how does X work, what library to use. | Bounded timebox. | Shipping production code. Spawn a `dev`/`vibe` follow-up. |
+| **analysis** | Best approach unclear — known problem, unknown solution. | Bounded timebox. | Shipping production code. Spawn a follow-up. |
+
+Set repo-wide default in `tasks/RUNE.md` at setup: `dev`, `vibe`, or `mixed`.
 
 ## Design Philosophy
 

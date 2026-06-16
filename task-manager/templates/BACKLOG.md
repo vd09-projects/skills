@@ -1,6 +1,6 @@
 # Project Task Backlog
 
-**Last updated:** YYYY-MM-DD | **Open tasks:** 0 | **Next up:** —
+**Last updated:** YYYY-MM-DD | **Open tasks:** 0 | **Next up:** — | **Runes:** 0 dev / 0 vibe / 0 research / 0 analysis
 
 ---
 
