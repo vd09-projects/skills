@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Stub: gh present but `gh repo view` fails (no GitHub remote).
+case "${1:-}" in
+  repo)
+    if [[ "${2:-}" == "view" ]]; then
+      echo "no git remotes found" >&2
+      exit 1
+    fi
+    ;;
+esac
+exit 0

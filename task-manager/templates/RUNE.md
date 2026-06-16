@@ -2,6 +2,19 @@
 
 **Last updated:** YYYY-MM-DD
 
+## Backend
+
+```
+backend: github
+```
+
+Allowed values:
+
+- `github` — tasks stored as GitHub issues in the repo where this skill is imported. Default. Requires the `gh` CLI authenticated and a GitHub remote.
+- `file` — tasks stored as markdown in `tasks/BACKLOG.md`. Used when no GitHub remote / `gh` CLI is available, or when the project explicitly prefers local files.
+
+If this field is missing, the skill assumes `github`. If `github` is selected but `gh` CLI is missing or the repo has no GitHub remote, the skill warns and falls back to `file`.
+
 ## Default mode
 
 ```

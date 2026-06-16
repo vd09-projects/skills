@@ -1,16 +1,23 @@
 # task-manager
 
-A lightweight, file-based task backlog skill for AI-assisted development workflows.
+A lightweight task backlog skill for AI-assisted development workflows. Two backends:
+
+- **GitHub issues** (default) — tasks live as issues in the repo where the skill is imported.
+  Status / priority / rune / source are encoded as labels; acceptance criteria are GitHub
+  task-list checkboxes; audit history comes from the issue timeline.
+- **Local files** — `tasks/BACKLOG.md` + `tasks/TASK-LOG.md` for projects without a GitHub remote
+  or `gh` CLI. Selected by setting `backend: file` in `tasks/RUNE.md`.
 
 Tasks emerge organically from coding sessions, decisions, and discoveries. This skill captures
 them, tracks their status, and always has an answer to **"What should I work on next?"**
 
 ## What this is
 
-- A prioritized backlog in plain markdown (`tasks/BACKLOG.md`)
-- An append-only changelog (`tasks/TASK-LOG.md`)
-- A rune-mode config (`tasks/RUNE.md`) — sizing rubric + repo default
-- Monthly archives for completed work (`tasks/archive/YYYY-MM.md`)
+- A backend switch in `tasks/RUNE.md` (`backend: github` | `file`, default `github`)
+- A rune-mode config in the same file — sizing rubric + repo default
+- **GitHub backend:** issues with `priority:*`, `rune:*`, `source:*`, `status:*` labels.
+- **File backend:** `tasks/BACKLOG.md` (prioritized markdown), `tasks/TASK-LOG.md` (append-only
+  changelog), `tasks/archive/YYYY-MM.md` (monthly archives).
 - Eight operating modes: Create, Harvest, Next, Status, Prioritize, Review, Decompose, Rune
 
 ## What this is NOT
@@ -39,8 +46,11 @@ ln -s /path/to/task-manager .claude/skills/task-manager
 cp -r /path/to/task-manager .claude/skills/task-manager
 ```
 
-On first use, the skill creates a `tasks/` directory in your project root by copying the
-bundled templates. This is where your actual task data lives — commit it to your project repo.
+On first use, the skill creates a `tasks/` directory in your project root and copies
+`tasks/RUNE.md` from the bundled template. It then prompts for the backend (default `github`).
+For the **GitHub backend**, that's all that lives locally — tasks themselves are issues in your
+GitHub repo. For the **file backend**, `BACKLOG.md`, `TASK-LOG.md`, and `archive/` are also
+created.
 
 ```
 your-project/
@@ -48,11 +58,11 @@ your-project/
 │   ├── SKILL.md
 │   ├── README.md
 │   └── templates/
-├── tasks/                          ← Your project's task data (created on first use)
-│   ├── BACKLOG.md
-│   ├── TASK-LOG.md
-│   ├── RUNE.md
-│   └── archive/
+├── tasks/                          ← Project task config (always)
+│   ├── RUNE.md                     ← backend + sizing config
+│   ├── BACKLOG.md                  ← file backend only
+│   ├── TASK-LOG.md                 ← file backend only
+│   └── archive/                    ← file backend only
 └── ...
 ```
 
@@ -160,7 +170,7 @@ Set repo-wide default in `tasks/RUNE.md` at setup: `dev`, `vibe`, or `mixed`.
 
 1. **Capture is king** — tasks don't slip through the cracks
 2. **Low friction** — one-liner creation, details later
-3. **Single source of truth** — BACKLOG.md, nothing else
+3. **Single source of truth** — GitHub issues (default) or BACKLOG.md, never both
 4. **User controls priority** — skill suggests, never overrides
-5. **Archive aggressively** — backlog shows only actionable work
+5. **Archive aggressively** — only actionable work is visible (closed issues / archive files)
 6. **No busywork** — system maintenance should never exceed its value
