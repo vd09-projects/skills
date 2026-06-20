@@ -118,16 +118,21 @@ freshness format. Rune writes it; no config → ask the destination once, procee
 Place the approved note under the **right concept**, at the depth it reached.
 Before creating anything, search Notion for an existing note on the same concept:
 if one exists, **accrete onto it** rather than making a duplicate (one home per
-fact). Promote to its own child page only when it earns it; otherwise keep it
-inline under the parent hub. Add the parent link and any cross-links.
+fact). The concept page holds L0+L1; each deeper level (L2/L3/L4) is a **child
+page**, created only once its material exists. No parent hub yet → bootstrap one
+(see filing ref), don't orphan the note. Add the PARENT back-mention and any
+RELATED cross-mentions as `<mention-page>` links.
 
-Read `references/notion-filing.md` for the placement logic, the Notion MCP
-operations to use, how L1–L4 map to toggle headings, and the maintenance-on-
-access step (bump `last touched`).
+Read `references/notion-filing.md` for the placement logic (incl. the no-hub
+bootstrap), the Notion MCP operations, how L1–L4 map to **nested child pages**
+(depth = page nesting, not toggle headings), how to link with `<mention-page>`,
+and the maintenance-on-access step (bump `last touched`). Read the
+`notion://docs/enhanced-markdown-spec` resource before composing page content.
 
 **If no Notion MCP / connector is available:** don't fail. Output a clean,
-paste-ready markdown block formatted for Notion (toggle headings as `▸`-marked
-sections) and tell the user where to paste it. The format survives any tool.
+paste-ready markdown block — concept page first, deeper levels as `### Lx`
+sections the user turns into subpages — and tell them where to nest it. The
+format survives any tool.
 
 ---
 

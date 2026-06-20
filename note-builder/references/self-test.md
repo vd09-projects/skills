@@ -1,57 +1,51 @@
 # Self-test questions
 
-Self-test is the note's **revision layer**, not a quiz. The bar: a reader who
-answers the whole set out loud should be able to **reconstruct the concept from
-the doc** — gist, mechanism, and the load-bearing tradeoffs — without reading the
-note body first. A miss is a signal, pointing straight at the rung to reread.
+Self-test is the note's **revision layer**, not a quiz. **Every page carries its
+own self-test**, scoped to that page's level: the concept page tests L0+L1, the L2
+page tests the mechanism, the L3 page tests the tradeoffs, the L4 page tests the
+implementation gotchas. The bar per page: a reader who answers that page's set out
+loud should be able to **reconstruct that page from memory**. Descend the whole
+ladder, answer each page's set, and you've revised the entire concept — the
+coverage is distributed across the tree, not piled on the entry page.
 
 Built for *retrieval, not memorization*: the user answers from their own head,
-then expands the toggle to check. The questions find the gaps; the note fills
-them.
+then expands the toggle to check. A miss points at the section right above it.
 
 ## Who writes them, and when
 
 - **Claude drafts.** The user curates — keeps the sharp ones, drops the rest.
-- **Stage 1**: optional single seed question, just to anchor the note.
-- **Stage 2 (develop)**: draft the *full* set, sized to the depth the note
-  reached (see Count below). This is where the revision layer is really built.
-- **Checkpoint 2**: the user prunes. Curation is theirs — over-deliver candidates,
-  let them cut. Better to draft 6 and keep 4 than draft 2 and miss coverage.
+- **Stage 1**: optional single seed question on the concept page, to anchor it.
+- **Stage 2 (develop)**: as each level page is created, draft *its own* self-test
+  alongside its content. A new L3 page ships with L3 questions in the same pass.
+- **Checkpoint 2**: the user prunes. Over-deliver candidates, let them cut.
 
-## Count — coverage-based, no fixed cap
+## Count — coverage-based, per page
 
-Forget "1–3." Write **as many as it takes to cover the concept**, and no more.
+Forget "1–3." On each page, write **as many as it takes to cover that page**, no more.
 
-Concretely, the set is complete when answering all of them rebuilds the note's
-load-bearing content:
+- The concept page: an anchor recall + the core *why* (usually 2–3).
+- Each level page: enough to rebuild *that level's* load-bearing content — a
+  mechanism page needs the steps; a tradeoffs page needs each gotcha/decision.
+- Depth, not length, drives count. Stop when another question only restates one
+  already there. **Padding to a number is the same error as inventing depth.**
 
-- Every rung that carries real meaning gets at least one question that probes it.
-  A note that reached L3 will usually need ~4–6; an L1 stub needs 1–2.
-- Depth, not length, drives count. A short but subtle note can need more
-  questions than a long but obvious one.
-- Stop when an extra question would only restate one already there. **Padding to
-  hit a number is the same error as inventing depth** — don't.
+Rule of thumb: strip a page's body, hand someone only its questions + their own
+knowledge — could they regenerate that page? If yes, that page's set is done.
 
-Rule of thumb, not a quota: if you removed the note body and handed someone only
-the questions + their own knowledge, could they regenerate the gist and the key
-tradeoffs? If yes, the set is done. If a whole rung would vanish, you're missing
-a question.
+## What each page's questions target
 
-## What each question targets
+Weight every page's set toward the **why/tradeoff** — the perishable part. The
+*type* of question follows the page's level:
 
-Spread the set across these, **weighted heavily toward the why/tradeoff** — that
-is the perishable, expensive part of understanding and the first thing to decay.
+| Page | Primarily tests | Question style |
+|---|---|---|
+| **Concept (L0+L1)** | the claim + why it matters | one recall anchor + the core "why this, not the alternative" |
+| **L2 · How it works** | can you reconstruct the mechanism | "what resets the timer?", "what happens on each call?" |
+| **L3 · Details / tradeoffs** | edges, gotchas, decisions | "when does it fail?", "what do you give up if…?" (several) |
+| **L4 · Implementation** | the doing gotchas | light — only what bites in practice; mostly defer to links |
 
-| Target | Tests | Maps to | Weight |
-|---|---|---|---|
-| **Why / tradeoff** | mental model — why this over the alternative, what you'd give up | L1–L3 | **majority** |
-| **Boundary / when-NOT** | edges — when it fails, gotchas, where it stops applying | L3 | several |
-| **Mechanism (how)** | can you reconstruct how it works | L2 | some |
-| **Recall the claim** | the core definition as an anchor | L1 | one, lightest |
-
-Most notes want: one anchor recall, one or two mechanism, several why/tradeoff,
-one or two boundary. Skip any row the material doesn't support — a pure
-definition note may be a single recall question and nothing else.
+Skip any page whose material doesn't support a real question — don't manufacture
+one to fill the slot.
 
 ## How to write a diagnostic question
 
@@ -68,42 +62,119 @@ Do:
 Don't:
 - Yes/no or guess-the-keyword questions — they pass on luck.
 - Questions whose answer is restated in the question wording.
-- Trivia with no decision attached (exact numbers, names) unless the number *is*
-  the load-bearing fact.
-- One mega-question covering the whole note — that defeats gap-location.
+- Trivia with no decision attached unless the number *is* the load-bearing fact.
+- One mega-question covering the whole page — that defeats gap-location.
 
 ## Answer format
 
-Question on the visible line; answer nested in a **toggle** beneath it.
+Each page ends with a `## Self-test` section. Question on the visible line; answer
+nested in a `<details>` **toggle** beneath it (toggles are the one place a level's
+content *doesn't* become a subpage). Indent the answer with a real tab or it falls
+outside the toggle.
 
 - **1–2 lines**, the core of the answer — enough to confirm a hit, not a re-teach.
-- End with a **reread pointer** to the rung that holds the full version:
-  `→ reread L2`. A miss routes the user straight there.
-- Don't paste the rung's full content into the toggle — that duplicates the note
-  and rots independently. Point, don't copy.
+- The answer tests *this page's own* content, so it **stands alone — no link**. The
+  source is the section right above; a same-page "reread" pointer can't be a real link
+  and reads as noise, and a "deeper → L2" pointer is wrong here because it implies the
+  answer lives elsewhere when it doesn't. Going deeper is the **MAP's** job, not the
+  self-test's. Only add a link when a question's answer genuinely lives on *another*
+  page (rare) — then mention that page.
+- **Linking reality (two-pronged):** the connector can't mint a heading anchor
+  (no block ids), so a `<mention-page>` only ever lands at a page's *top*. To get
+  links that actually hit the right content:
+  1. **Split finer (default, automatable).** Make the thing worth linking its own
+     page — a sub-section *is* a sub-page — then the mention lands exactly on it.
+     If a level page holds several distinct ideas you'd point at separately, split
+     them into child pages rather than headings-within-a-page.
+  2. **Manual anchor (escape hatch).** For a precise jump to a heading you'd rather
+     not split out, ask the user to use Notion's **"Copy link to block"** and paste
+     it; wire that exact URL into the answer as a normal link. It's the only true
+     in-page anchor.
+  Never leave a plain-text "reread L1" that masquerades as a link.
+- Don't paste the page's full content into the toggle — point, don't copy.
+
+## "Read more" — two link styles (pick one project-wide)
+
+A self-test answer is a gap-check. After a miss there are two "read more" intents,
+and two ways to serve them. Pick one and apply it consistently.
+
+**Style A — clean answer + MAP (no per-answer link).** The page is short by design
+(gist + self-test), so rechecking the fact is a glance up; going *deeper* is the
+MAP's job, once, at the bottom.
+
+```
+## L1 · Gist
+Debounce = run after events stop for N ms. Throttle = run at most once per N ms.
+
+## Self-test
+▾ Q: One line each — what does debounce do vs throttle?
+    Debounce: fire after silence. Throttle: fire at a fixed max rate.
+▾ Q: Why debounce a search box rather than throttle it?
+    You only want the final query, not every keystroke.
+
+## MAP
+- → L2 · How it works        ← the one "go deeper" path
+```
+
+*Pro:* zero clutter, nothing to maintain, no broken-looking links. *Con:* no
+one-click jump to the exact source line (but it's a few lines up on a short page).
+
+**Style B — per-answer block anchor (manual).** Each answer ends with a real link to
+the section it came from, made via Notion's **"Copy link to block"** (the only source
+of a true within-page anchor — the connector can't mint these).
+
+```
+## Self-test
+▾ Q: One line each — what does debounce do vs throttle?
+    Debounce: fire after silence. Throttle: fire at a fixed max rate.
+    ↪ read more: [L1 · Gist](https://www.notion.so/…-<pageid>#<blockid>)
+```
+
+*Pro:* one click scrolls to the exact heading. *Con:* you must copy a block link by
+hand for every pointer; it's not automatable, and the link breaks if the block is
+deleted.
+
+| | Style A | Style B |
+|---|---|---|
+| Per-answer link | none | block anchor |
+| Effort | zero | manual copy each |
+| Jumps to exact section | no (glance up) | yes |
+| Automatable | yes | no |
+| Best when | pages stay short | a page is long / heavily revisited |
+
+Default to **A**; reach for **B** only on the rare page long enough that scrolling to
+the source is real friction — and at that size, consider splitting it instead.
 
 ## Maintenance
 
-Self-test tracks the note. When Stage 2 adds or removes a rung, add or cut the
-questions that cover it in the same pass — an L3 added with no boundary question
-leaves that depth untested. Bump `last touched` when you edit the set.
+Self-test tracks the page it lives on. When Stage 2 adds a level page, it ships
+with its own questions; when a page's content changes, fix its questions in the
+same pass. Bump `last touched` on the concept page when you edit any of it.
 
-## Worked example — `B-tree indexing` (extends template.md)
+## Worked example — `B-tree indexing` (distributed across the tree)
 
 ```
-SELF-TEST:
-  Q: One line — what is a B-tree index and what queries is it for?     ▸ (recall, L1)
-     ↳ Sorted balanced tree; =, <, >, BETWEEN, ORDER BY.  → reread L1
-  Q: Why does the planner pick it over a seq scan, and when does it stop?  ▸ (why, L2)
-     ↳ O(log n) on selective lookups; flips to seq scan when the match set is large.  → reread L2
-  Q: Why is it a poor fit for very low-cardinality columns?            ▸ (why, L3)
-     ↳ Few distinct values → most rows match → tree walk costs more than a scan.  → reread L3
-  Q: When does a B-tree NOT help at all?                              ▸ (boundary, L3)
-     ↳ Non-prefix LIKE, full-text, array/containment — use GIN/BRIN.  → reread L3
-  Q: What would you give up by switching this column to a hash index?  ▸ (tradeoff, L3)
-     ↳ Range & ORDER BY support — hash does equality only.  → reread L3
+CONCEPT PAGE — "B-tree is Postgres's default index…"
+  ## Self-test
+    Q: One line — what is a B-tree index and what queries is it for?   ▸ (recall)
+       ↳ Sorted balanced tree; =, <, >, BETWEEN, ORDER BY.
+    Q: Why is it the right default over a hash index?                  ▸ (why)
+       ↳ Supports ranges & ORDER BY, not just equality.
+
+  └─ L2 · How it works
+       ## Self-test
+         Q: How does the planner decide to use the index vs a seq scan?  ▸ (mechanism)
+            ↳ O(log n) descent when selective; flips to scan when the match set is large.
+
+       └─ L3 · Details / tradeoffs
+            ## Self-test
+              Q: Why is it a poor fit for very low-cardinality columns?  ▸ (boundary)
+                 ↳ Few distinct values → most rows match → scan beats the tree walk.
+              Q: When does a B-tree NOT help at all?                     ▸ (boundary)
+                 ↳ Non-prefix LIKE, full-text, array/containment — use GIN/BRIN.
+              Q: What do you give up switching this column to a hash index?  ▸ (tradeoff)
+                 ↳ Range & ORDER BY support — hash does equality only.
 ```
 
-Five questions, weighted to *why/tradeoff*, one per load-bearing rung. Answer all
-five and you've rebuilt the concept from the doc — which is the whole point. A
-shallow note would have one or two of these and stop.
+Each page self-contained for revision; the deeper you go, the more pointed the
+questions. A shallow note is just the concept page's two questions and stops.

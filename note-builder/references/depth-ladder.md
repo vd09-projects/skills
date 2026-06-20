@@ -5,6 +5,13 @@ A consistent set of levels so you always know where to enter and how far to go.
 L4. Filling a level the source doesn't actually support is an error, not
 thoroughness.
 
+**Each level past L1 is its own child page**, nested under the level above
+(concept page = L0+L1 → L2 page → L3 page → L4 page). Depth = page nesting; the
+sidebar tree is the ladder. Every level page opens with a one-line local gist and a
+back-mention to its parent, and ends with **its own self-test** scoped to that
+level's content (see `self-test.md`) so a deep landing never disorients. Create a
+level page only when its material exists — never a pre-built empty rung.
+
 | Level | Name | Contents | Reader intent |
 |---|---|---|---|
 | **L0** | Identity | Claim-style title + one-line "what & why" | The search hit; "is this the note I want?" |

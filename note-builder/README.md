@@ -28,7 +28,7 @@ note-builder/
     ├── self-test.md              # the revision-layer rules: count, targeting, answer format
     ├── depth-ladder.md           # the 5 levels + the "how deep should this go?" heuristic
     ├── disciplines.md            # what goes in a note + the anti-patterns to refuse
-    └── notion-filing.md          # place-by-concept, MCP operations, toggle mapping, markdown fallback
+    └── notion-filing.md          # place-by-concept, MCP ops, nested-page mapping, mentions, fallback
 ```
 
 ## Setup (Rune)
@@ -112,9 +112,9 @@ material, then say something like:
 - **You verify, it drafts.** The encoding (rewording into your own words) and
   the fact-checking stay with you on purpose — that's where the learning happens
   and where you catch mistakes.
-- **The format is the durable asset.** Claim title → one-liner → self-test →
-  layered toggles → source link → metadata is plain hierarchy-plus-toggles. It
-  pastes into Notion cleanly and survives any future tool change.
+- **The format is the durable asset.** Claim title → one-liner → L1 gist →
+  self-test → nested level pages (L2→L3→L4) → source links → metadata is plain
+  hierarchy. It maps cleanly onto Notion subpages and survives any tool change.
 
 ## Editing it later
 

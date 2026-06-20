@@ -26,7 +26,8 @@ notes_dir:
 
 <!-- From Q38. Decides Stage 3's filing path.
      - mcp        → Notion MCP connector available; file directly.
-     - markdown   → no connector; emit paste-ready markdown (toggle headings as ▸).
+     - markdown   → no connector; emit paste-ready markdown (deeper levels as
+                    ### Lx sections the user turns into subpages).
      If unsure, leave as markdown — it survives any tool. -->
 
 mode: <!-- mcp | markdown -->

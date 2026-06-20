@@ -3,32 +3,36 @@
 Every note has the same shape. A fixed shape means near-zero per-note decisions,
 and it survives any tool migration. Fill it lazily — empty rungs are fine.
 
+**Depth is page nesting, not headings on one page.** The concept page carries L0+L1;
+each deeper level is a **child page** of the one above it. The sidebar tree *is* the
+depth ladder — open the rung you want.
+
 ```
-TITLE:      [claim-style — the answer in one line]                 (L0)
-WHAT / WHY: [one sentence: what it is + why you'd care]            (L0)
+CONCEPT PAGE  (the search hit = L0 + L1)
+  TITLE:      [claim-style — the answer in one line]                 (L0)
+  WHAT / WHY: [one sentence: what it is + why you'd care]            (L0)
+  L1 Gist:    [30–60s working mental model — plain text, no toggle]  (L1)
 
-SELF-TEST:  Q: [...]  → answer in a toggle
-            Q: [...]  → answer in a toggle
-            (coverage-based: enough Qs to revise the whole concept from the
-             doc, weighted to why/tradeoff. On-demand recall, not a quiz.
-             See self-test.md.)
+  SELF-TEST:  Q: [...]   ▸ answer in a toggle      (this page = L0+L1: recall + core why)
+              Q: [...]   ▸ answer in a toggle
 
-▸ L1  Gist            (open by default)
-▸ L2  How it works    (toggle)
-▸ L3  Details / tradeoffs / gotchas   (toggle)
-▸ L4  Implementation + → source links (toggle)
+  MAP:        → <mention: L2 page>  → <mention: child concept>   (index of deeper nodes)
+  RELATED:    → <mention: cross concept> (+ one phrase on why it connects)
+  PARENT:     ← <mention: parent / domain hub>
+  META:       type: concept | reference · confidence · last touched: YYYY-MM-DD
 
-MAP:        → [[child page]]  → [[child page]]   (index of deeper nodes)
-RELATED:    → [[cross-linked concept]] (+ one phrase on why it connects)
-PARENT:     ← [[parent page]]
-
-META:       type: concept | reference
-            confidence: confirmed | told | assumed | inferred
-            last touched: YYYY-MM-DD
+  └─ L2 · How it works          (child page — local gist + mechanism, ← back to concept)
+       SELF-TEST: own questions on the mechanism
+       └─ L3 · Details / tradeoffs / gotchas   (child of L2)
+            SELF-TEST: own questions on the tradeoffs / boundaries
+            └─ L4 · Implementation + → source links   (child of L3)
+                 SELF-TEST: light — only the gotchas that bite
 ```
 
-In Notion each `Lx` is a **toggle heading**, so the collapsed page *is* the
-depth ladder — the user expands only the rung they want.
+Each `Lx` page exists **only once the material fills it** — never pre-build an
+empty L2/L3/L4 skeleton (that's the premature-structure anti-pattern). A note that
+stops at L1 is one page; a deep note is a short chain. The collapsed sidebar shows
+exactly how far the ladder goes.
 
 ## Field-by-field
 
@@ -37,22 +41,37 @@ depth ladder — the user expands only the rung they want.
   answers "is this the note I want?" from the search hit alone.
 - **WHAT / WHY** — one sentence. The *why* is the perishable, expensive part;
   always include it.
-- **SELF-TEST** — questions on the visible line, answers nested in toggles. A
-  miss points the user straight to the section to reread. Write enough to revise
-  the whole concept from the doc (not a fixed count), weighted to why/tradeoff;
-  keep the sharp ones, drop the rest. They're for finding gaps, not rote
-  memorization. Full rules in `self-test.md`.
-- **L1–L4** — see `depth-ladder.md`. Fill only as far as the material supports.
-- **MAP** — links to deeper children. Only appears once a note has children.
-- **RELATED** — real conceptual connections, each with a short reason. Connect,
-  don't group: no generic tag-buckets.
-- **PARENT** — every note links back to its parent. No orphans.
-- **META** —
+- **L1 Gist** — plain text on the concept page, open and visible (no click). The
+  30–60s mental model.
+- **SELF-TEST** — **every page carries its own**, scoped to that page's level: the
+  concept page tests L0+L1, each level page tests its own content. Questions on the
+  visible line, answers nested in `<details>` toggles; the reread target is the
+  section right above. Coverage is distributed down the tree, not piled on the
+  entry page. See `self-test.md`.
+- **L2–L4** — each is a **child page**, nested under the level above. Every level
+  page opens with its own one-line local gist + a back-mention to its parent, holds
+  that level's content, and ends with its own self-test (anti maze-trees — a deep
+  landing is never disorienting). See `depth-ladder.md`.
+- **MAP** — the concept page's index of its deeper level pages and child concepts,
+  as page mentions. This is how the ladder stays navigable; only list nodes that exist.
+- **RELATED** — real conceptual connections, each a page mention with a short reason.
+  Connect, don't group: no generic tag-buckets.
+- **PARENT** — every page mentions its parent (concept → domain hub; L2 → concept;
+  L3 → L2). No orphans.
+- **META** — on the concept page.
   - `type`: `concept` (something you're learning) or `reference` (a system,
     call, or codebase you operate).
   - `confidence`: how you know it — `confirmed` (verified), `told` (someone said
     so), `assumed`, `inferred`. Matters when the user later acts on it.
   - `last touched`: the freshness date; bump it on every real-use edit.
+
+## Shared / common sub-concepts
+
+When a sub-concept is reused by several notes (e.g. `Event loop` under both
+`Debounce vs throttle` and `Promises`), give it **one home** under a top-level
+`Common/` (or `Shared/`) hub and `<mention-page>`-link to it from each parent —
+don't copy it into each tree. Duplicate only when a real shared home is impossible,
+and sparingly; one stale edit in a duplicated fact poisons trust everywhere.
 
 ## Two modes, one shape
 
@@ -70,23 +89,26 @@ You maintain one system, not two.
 ## Worked example — `B-tree indexing` (type: concept)
 
 ```
-TITLE:      B-tree is Postgres's default index, best for range & equality lookups
-WHAT / WHY: Balanced tree keeping sorted keys; the right default for most ordered queries.
+CONCEPT PAGE — "B-tree is Postgres's default index, best for range & equality lookups"
+  WHAT / WHY: Balanced tree keeping sorted keys; the right default for most ordered queries.
+  L1 Gist:    sorted, balanced tree; O(log n) lookups; supports =, <, >, BETWEEN, ORDER BY.
 
-SELF-TEST:
-  Q: When does a B-tree index NOT help?               ▸ (answer)
-  Q: Why is it bad for very low-cardinality columns?  ▸ (answer)
+  SELF-TEST:   (this page = L0+L1)
+    Q: One line — what is a B-tree and what queries is it for?  ▸ (recall)
+    Q: Why is it the right default over a hash index?           ▸ (why)
 
-▸ L1  Gist — sorted, balanced tree; O(log n) lookups; supports =, <, >, BETWEEN, ORDER BY
-▸ L2  How it works — pages, keys, leaf/internal nodes, how the planner chooses it
-▸ L3  Details — bloat, fillfactor, partial & covering indexes, when GIN/BRIN beat it
-▸ L4  Examples + → [Postgres docs: B-tree], → [our schema's index definitions]
+  MAP:     → <L2 · How it works>  → <L3 · Details>
+  RELATED: → <GIN index> (full-text / arrays)  → <Query planner>
+  PARENT:  ← <Indexing>
+  META:    type: concept · confidence: confirmed · last touched: 2026-06-07
 
-RELATED:    → [[GIN index]] (full-text / arrays)  → [[Query planner]]
-PARENT:     ← [[Indexing]]
-META:       type: concept · confidence: confirmed · last touched: 2026-06-07
+  └─ L2 · How it works    — pages, keys, leaf/internal nodes, how the planner chooses it
+       SELF-TEST: Q: how does the planner pick index vs seq scan?  ▸
+       └─ L3 · Details    — bloat, fillfactor, partial & covering indexes, when GIN/BRIN beat it
+            SELF-TEST: Q: when does it NOT help?  Q: cost of low-cardinality columns?  ▸
+            └─ L4 · Examples + → [Postgres docs: B-tree], → [our schema's index definitions]
 ```
 
-Contrast: a language-learning topic might be just three shallow pages with no
-deep branches — same template, far less tree. Depth flexes to the subject
-because it's emergent, not prescribed.
+Contrast: a language-learning topic might be a single concept page with no deeper
+pages at all — same shape, no chain. Depth flexes to the subject because it's
+emergent, not prescribed.
