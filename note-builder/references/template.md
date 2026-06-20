@@ -9,7 +9,9 @@ WHAT / WHY: [one sentence: what it is + why you'd care]            (L0)
 
 SELF-TEST:  Q: [...]  → answer in a toggle
             Q: [...]  → answer in a toggle
-            (1–3 questions; on-demand active recall, a diagnostic not a quiz)
+            (coverage-based: enough Qs to revise the whole concept from the
+             doc, weighted to why/tradeoff. On-demand recall, not a quiz.
+             See self-test.md.)
 
 ▸ L1  Gist            (open by default)
 ▸ L2  How it works    (toggle)
@@ -36,8 +38,10 @@ depth ladder — the user expands only the rung they want.
 - **WHAT / WHY** — one sentence. The *why* is the perishable, expensive part;
   always include it.
 - **SELF-TEST** — questions on the visible line, answers nested in toggles. A
-  miss points the user straight to the section to reread. Keep the good ones;
-  drop the rest. Don't write these for memorization — they're for finding gaps.
+  miss points the user straight to the section to reread. Write enough to revise
+  the whole concept from the doc (not a fixed count), weighted to why/tradeoff;
+  keep the sharp ones, drop the rest. They're for finding gaps, not rote
+  memorization. Full rules in `self-test.md`.
 - **L1–L4** — see `depth-ladder.md`. Fill only as far as the material supports.
 - **MAP** — links to deeper children. Only appears once a note has children.
 - **RELATED** — real conceptual connections, each with a short reason. Connect,

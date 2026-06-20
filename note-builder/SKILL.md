@@ -52,7 +52,8 @@ transcribe the source — capture the mental model):
 - **L0 — Title**: a claim-style line that *is the answer* (not "Notes on X").
 - **L0 — What / Why**: one sentence — what it is + why you'd care.
 - **L1 — Gist**: a 30–60 second working mental model.
-- **firOne self-test question** (optional but encouraged): a diagnostic, not a quiz.
+- **One self-test seed question** (optional): a diagnostic, not a quiz. The full
+  coverage set comes in Stage 2 — see `references/self-test.md`.
 - **Source link**: link out; do not copy the source in.
 - **type**: guess `concept` (learning) or `reference` (a system/call/codebase).
 
@@ -86,8 +87,10 @@ Decide the target depth first, then fill up to it:
 - Has commands / code / worked examples → add **L4 (mostly pointers + links)**.
 
 Read `references/depth-ladder.md` for the level definitions and the
-complexity→depth heuristic. Also in this stage: draft 1–3 self-test questions,
-propose RELATED cross-links and the PARENT link, and set metadata
+complexity→depth heuristic. Draft the self-test set in this stage too — enough
+questions to **revise the whole concept from the doc**, sized to the depth the
+note reached and weighted toward the *why/tradeoff*; see `references/self-test.md`.
+Also propose RELATED cross-links and the PARENT link, and set metadata
 (`type`, `confidence`, `last touched`). Follow `references/disciplines.md` for
 the content rules (capture the *why*, link don't copy, mark provenance,
 keep it atomic) and the anti-patterns to refuse.
@@ -128,6 +131,7 @@ sections) and tell the user where to paste it. The format survives any tool.
 | You're about to... | Read |
 |---|---|
 | Shape any note (Stage 1 or 2) | `references/template.md` |
+| Write the self-test set (Stage 2) | `references/self-test.md` |
 | Decide how deep to go (Stage 2) | `references/depth-ladder.md` |
 | Judge what content belongs / what to refuse | `references/disciplines.md` |
 | Put it into Notion (Stage 3) | `references/notion-filing.md` |

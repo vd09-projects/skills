@@ -21,6 +21,7 @@ note-builder/
 ├── README.md                     # this file
 └── references/
     ├── template.md               # the exact L0–L4 / self-test / META template + a worked example
+    ├── self-test.md              # the revision-layer rules: count, targeting, answer format
     ├── depth-ladder.md           # the 5 levels + the "how deep should this go?" heuristic
     ├── disciplines.md            # what goes in a note + the anti-patterns to refuse
     └── notion-filing.md          # place-by-concept, MCP operations, toggle mapping, markdown fallback
@@ -32,11 +33,12 @@ It runs in three stages with a review stop after the first two. You drive it —
 nothing gets written to Notion without your yes.
 
 1. **Draft basic note** — a shallow first pass: a claim-style title, a one-line
-   what/why, a 30–60s gist, one self-test question, and the source link. *You
-   review.*
+   what/why, a 30–60s gist, an optional seed self-test question, and the source
+   link. *You review.*
 2. **Develop ("migrate")** — grows the note down the depth ladder **only as far
    as the material supports and you want** — a simple idea stays at L1; a meaty
-   one reaches L3 or L4. Adds self-test questions, cross-links, and metadata.
+   one reaches L3 or L4. Adds the full self-test set (enough to revise the
+   concept from the doc), cross-links, and metadata.
    *You review.*
 3. **File to Notion** — places it under the right concept (accreting onto an
    existing note if one exists, never duplicating), at the depth it reached, via
