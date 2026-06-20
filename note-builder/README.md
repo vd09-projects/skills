@@ -19,6 +19,10 @@ system itself is built on.
 note-builder/
 ├── SKILL.md                      # the staged pipeline + routing + checkpoints
 ├── README.md                     # this file
+├── rune.md                       # Rune manifest — how project setup wires this skill
+├── templates/
+│   └── note-builder/
+│       └── config.template.md    # Rune fills this → skill-memory/note-builder/config.md
 └── references/
     ├── template.md               # the exact L0–L4 / self-test / META template + a worked example
     ├── self-test.md              # the revision-layer rules: count, targeting, answer format
@@ -26,6 +30,15 @@ note-builder/
     ├── disciplines.md            # what goes in a note + the anti-patterns to refuse
     └── notion-filing.md          # place-by-concept, MCP operations, toggle mapping, markdown fallback
 ```
+
+## Setup (Rune)
+
+Run the **Rune** onboarding skill once and it configures this skill from its
+`rune.md` manifest — grilling you for the notes destination (Notion page/DB or a
+markdown dir), MCP-vs-markdown mode, concept buckets, and depth bias, then writing
+`.claude/skill-memory/note-builder/config.md`. Set a global default at
+`~/.claude/skill-memory/note-builder/config.md`; a project file overrides it. No
+Rune / no config → note-builder asks the destination once on first file and proceeds.
 
 ## How the pipeline works
 

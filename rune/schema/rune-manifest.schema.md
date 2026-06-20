@@ -52,6 +52,7 @@ deferrable:
 | `conventions` | Error handling, logging, config, naming |
 | `team-process` | Team size, reviewers, urgency, domain persona |
 | `out-of-scope` | What this project and skill should NOT do |
+| `notes-system` | Notes destination, MCP/markdown, concept buckets, depth bias (knowledge skills) |
 
 Unknown IDs → `Unknown block ID: [id] in {skill_path}/rune.md` — Rune skips that block.
 

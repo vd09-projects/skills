@@ -110,6 +110,11 @@ so they can confirm before it becomes a note they act on.
 
 ## Stage 3 — File to Notion
 
+First read config if present: `.claude/skill-memory/note-builder/config.md`
+(project) layered over `~/.claude/skill-memory/note-builder/config.md` (global) —
+it sets the destination, `mode` (mcp vs markdown), concept buckets, depth bias, and
+freshness format. Rune writes it; no config → ask the destination once, proceed.
+
 Place the approved note under the **right concept**, at the depth it reached.
 Before creating anything, search Notion for an existing note on the same concept:
 if one exists, **accrete onto it** rather than making a duplicate (one home per

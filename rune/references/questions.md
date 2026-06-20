@@ -89,6 +89,24 @@ Default tiers (skills can override per their `rune.md`):
 
 ---
 
+## `notes-system` — Default tier: RECOMMENDED
+
+For knowledge / note-capture skills (e.g. note-builder). Where notes live and how
+they should be filed.
+
+37. **[CRITICAL]** Where do your notes live, and where should new notes be filed?
+    A Notion parent page or database (name or URL), or a markdown directory path.
+38. Is a Notion MCP connector available in this environment, or should notes be
+    emitted as paste-ready markdown for you to file yourself?
+39. What top-level concept buckets should notes file under (e.g. Postgres,
+    Trading, Languages)? List the ones that already exist so notes accrete, not orphan.
+40. Default depth bias — keep the standard "default shallow" (stop at L1 unless
+    asked to go deeper), or bias deeper / shallower for this context?
+41. Date format and timezone for freshness stamps (`last touched`)? Default: ISO
+    `YYYY-MM-DD`, local time.
+
+---
+
 ## Synthesis checklist (internal — run before Phase 2)
 
 Before drafting files, verify these are answered (not TBD):
