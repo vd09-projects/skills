@@ -65,3 +65,22 @@ depth_bias: default
 date_format: YYYY-MM-DD
 timezone: local
 default_type: concept
+
+## Self-test links
+
+<!-- How self-test answers link to their source (see references/self-test.md +
+     notion-filing.md).
+     selftest_style: B = each answer ends with a "↪ read more" anchor to its source
+       block. A = clean, no link (fallback when no anchor method is available).
+     anchor_method:
+       - rest-token       → block ids from the Notion REST API (clean, automatic).
+                            Requires a LOCAL token in a secrets file, never committed:
+                            token_file: ~/.claude/skill-memory/note-builder/secrets.env
+                            (NOTION_TOKEN=…), notion_api_version: 2022-06-28, and the
+                            integration shared with the notes parent.
+       - copy-link        → user pastes "Copy link to block" URLs (manual, clean).
+       - probe-comment    → comment to read the block id, delete after (auto, throwaway).
+     Anchor format: pageURL#<blockId-no-dashes>. -->
+
+selftest_style: B
+anchor_method: copy-link

@@ -62,7 +62,24 @@ text, not blocks). To make links actually hit the right content:
    ideas, split them into child pages rather than headings-within.
 2. **Manual anchor (escape hatch).** For a precise mid-page heading jump the user
    doesn't want to split out, have them use Notion's **"Copy link to block"** and
-   paste the URL; wire it in as a normal link. That's the only real anchor source.
+   paste the URL; wire it in as a normal link. That's the only *clean* anchor source.
+   "Copy link to block" is UI-only — there is no API/connector trigger for it, so the
+   skill cannot generate it itself; the human pastes, the skill wires.
+
+> **Why the asymmetry:** the Notion *app* exposes every block's id (so the user's
+> "Copy link to block" just reads it); the *MCP connector* hands back text only and
+> strips block ids, so the skill never sees them. It's a connector gap, not a Notion
+> limit — Notion's REST API *does* return block ids.
+>
+> **Programmatic anchor without REST access:** comment on the target block, read the
+> `discussion://…/<blockId>/…` URL, build `pageURL#<blockId-no-dashes>`. The blockId
+> is the block's *permanent* id, so the anchor keeps working after the comment is
+> deleted — the probe comment is throwaway, not permanent litter. But the delete is
+> manual (no API for it), so prefer "Copy link to block" when a human is present.
+>
+> **Cleanest auto path:** with a Notion *integration token*, call the REST API
+> (`GET /blocks/{id}/children`) for block ids directly — true anchors, no comment, no
+> paste. Use this if anchors are wanted at scale.
 
 Never leave a plain-text "reread X" that masquerades as a link.
 

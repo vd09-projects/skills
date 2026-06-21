@@ -73,12 +73,14 @@ content *doesn't* become a subpage). Indent the answer with a real tab or it fal
 outside the toggle.
 
 - **1–2 lines**, the core of the answer — enough to confirm a hit, not a re-teach.
-- The answer tests *this page's own* content, so it **stands alone — no link**. The
-  source is the section right above; a same-page "reread" pointer can't be a real link
-  and reads as noise, and a "deeper → L2" pointer is wrong here because it implies the
-  answer lives elsewhere when it doesn't. Going deeper is the **MAP's** job, not the
-  self-test's. Only add a link when a question's answer genuinely lives on *another*
-  page (rare) — then mention that page.
+- **End each answer with a `↪ read more` jump link to the exact block/section it
+  tests** (Style B — the chosen default). The answer tests *this page's own* content,
+  so the link points at the source block *on this same page* (the gist line, the
+  specific bullet) — a miss jumps straight there. Don't link to *another* level for a
+  same-level question (that's the MAP's job, and it implies the answer lives elsewhere).
+- **Anchoring the link:** the link is `pageURL#<blockId>`. Source the blockId per
+  `notion-filing.md` — REST token (clean, auto) ▸ "Copy link to block" (manual, clean)
+  ▸ throwaway probe-comment (auto, delete after). Never a plain-text "reread X".
 - **Linking reality (two-pronged):** the connector can't mint a heading anchor
   (no block ids), so a `<mention-page>` only ever lands at a page's *top*. To get
   links that actually hit the right content:
@@ -142,8 +144,10 @@ deleted.
 | Automatable | yes | no |
 | Best when | pages stay short | a page is long / heavily revisited |
 
-Default to **A**; reach for **B** only on the rare page long enough that scrolling to
-the source is real friction — and at that size, consider splitting it instead.
+**Chosen default: B** — every self-test answer ends with a `read more` anchor to its
+source block. **A is the fallback** for when no anchor method is available (no REST
+token and the user won't paste a block link): answers stand clean and "go deeper" is
+the MAP.
 
 ## Maintenance
 
