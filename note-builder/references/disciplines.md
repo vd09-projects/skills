@@ -42,14 +42,18 @@ What actually goes in a note, and what to refuse. Apply these mainly in Stage 2.
   the pipeline always reshapes into the template and always checkpoints.
 - **Duplication / many homes for one fact** — one stale edit silently poisons
   trust in everything. Search Notion first; accrete onto the existing concept.
-- **Premature structure** — never pre-build a deep empty skeleton. Let the tree
-  grow from where the user digs. Premature structure is a top cause of
-  abandonment.
+- **Premature structure** — never pre-build a deep empty skeleton, and never
+  create pages first and then work out how to link them. Content first: write, see
+  what's too heavy, *then* spawn a child for it and link the section down. Let the
+  tree grow (and fan out) from where the user digs. Premature structure is a top
+  cause of abandonment.
 - **Grouping instead of connecting** — generic tag-buckets add clutter, not
   meaning. Links should be real conceptual connections with a stated reason.
 - **Maze trees** — deep branches without a lean, skimmable gist at each hub.
   Every page must reorient the reader locally.
 - **Collector's fallacy** — capturing feels like learning; it isn't. Processing
   is where learning happens. More captured material is not more progress.
-- **Inventing depth** — padding a simple note up to L3/L4 to look thorough.
-  Partial notes are complete notes.
+- **Inventing depth** — padding a simple note deeper to look thorough, *or*
+  splitting a one-paragraph idea into its own thin stub page. A child page must
+  earn its existence with material the source actually supports. Partial notes are
+  complete notes; a section with nothing more to say stays inline.

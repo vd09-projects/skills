@@ -4,9 +4,12 @@ Place the approved note under the right **concept**, at whatever depth it reache
 without ever creating a duplicate. Organize by concept, never by source — that is
 what lets notes *accrete and get better* over time instead of multiplying.
 
-Depth is **page nesting**: the concept page carries L0+L1, and L2/L3/L4 are child
-pages chained beneath it (see `template.md`). You create a level page only when the
-material fills it — never a pre-built empty skeleton.
+Depth is **page nesting that fans out and recurses**: the concept page carries
+L0+L1, and each section needing elaboration becomes a child page — one parent can
+have *many*, and any child branches again, with no level ceiling (see
+`template.md`). It's a tree, not a single L2→L3→L4 chain. Write content first; you
+create a child page only when a section is too heavy for its page and the material
+fills it — never a pre-built empty skeleton.
 
 ## Before you write — read the spec, use tabs
 
@@ -20,9 +23,10 @@ material fills it — never a pre-built empty skeleton.
 
 1. **Search Notion for the concept first** (`search` the concept name, e.g.
    "B-tree indexing" — not the source it came from).
-2. **Concept exists → accrete onto it.** Merge new material into the matching level:
-   deepen the L2 page, add an L3 gotcha, add an L4 source. Reword for one consistent
-   voice, bump `last touched`. **One home per fact** — never a second page.
+2. **Concept exists → accrete onto it.** Merge new material into the matching page:
+   deepen the relevant child, add a gotcha to its tradeoffs page, spawn a new child
+   for a section that has now grown too heavy. Reword for one consistent voice, bump
+   `last touched`. **One home per fact** — never a second page.
 3. **Concept is new → create it**, then attach it to the tree:
    - Find or create its **parent / domain hub** (e.g. `Indexing` under `Postgres`).
    - **Bootstrap when there is no hub yet** (fresh workspace, or first note in a
@@ -31,10 +35,12 @@ material fills it — never a pre-built empty skeleton.
      at the top level with a dead-text PARENT; either nest it under a hub or, if the
      user declines a hub, say the PARENT is unset and why.
    - Add the **PARENT** back-mention and any **RELATED** cross-mentions (with reasons).
-4. **Depth grows as child pages, lazily.** The concept page holds L0+L1. Promote a
-   level to its own child page the moment that level has real content — but never
-   pre-create empty L2/L3/L4 pages. Each new level page opens with a local gist and a
-   back-mention to its parent.
+4. **Depth grows as child pages, lazily and by fan-out.** The concept page holds
+   L0+L1. Spawn a child page the moment a *section* has real content too heavy for
+   its page, and link that section down to it — one parent can sprout several
+   children, and each can branch again. Never pre-create empty pages. Each child
+   opens with a local gist and a back-mention to its parent. Group related sections
+   on one page; only split out the ones heavy enough to stand alone.
 5. **Keep hubs and concept pages lean.** A hub is gist + a MAP (page mentions to
    children that actually exist) — not a dumping ground.
 
@@ -89,11 +95,13 @@ Never leave a plain-text "reread X" that masquerades as a link.
 - **What / Why** → first line of the page body, plain text.
 - **L1 Gist** → plain text on the concept page (open, no toggle).
 - **Self-test** → a `## Self-test` section on **every page**, scoped to that page's
-  level (concept page tests L0+L1; each level page tests its own content). Question
+  content (concept page tests L0+L1; each child page tests its own content). Question
   as text, answer nested in a `<details>` toggle (tab-indented); reread target is the
   section above it on the same page.
-- **L2 / L3 / L4** → **child pages**, each nested under the level above: local gist +
-  that level's content + its own self-test. No toggle headings. Create on demand only.
+- **Child pages** → each elaborated section becomes its own **child page**, nested
+  under the section that spawned it (a page can have many; they branch further):
+  local gist + that section's content + its own self-test. No toggle headings.
+  Create on demand only.
 - **MAP / RELATED / PARENT** → `<mention-page>` links.
 - **META** → a short property line at the bottom of the concept page (or page
   properties if it lives in a database). `last touched` is the freshness signal.

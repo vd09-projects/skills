@@ -79,12 +79,29 @@ heart of the system: depth is *emergent and lazily filled*, partial notes are
 complete notes, and inventing depth the source doesn't contain is a content
 error, not thoroughness.
 
-Decide the target depth first, then fill up to it:
+Depth is **emergent, recursive, and content-driven** — not a fixed L0→L4 chain.
+The levels (L0–L4) name *how compressed* a page is, not a one-page-per-level
+ladder. The real shape: write the content, then wherever a section is too heavy
+or genuinely wants elaboration, **split it into its own page and link that
+section down to it** — and recurse. One page can fan out to *many* children
+(one per complex sub-concept), and there is **no level ceiling** (deep notes
+reach L5, L6+). A `<mention-page>` lands at the top of its target, so making an
+elaboration its own page *is* the in-page anchor.
 
-- Simple definition / single idea → stop at **L1** (it's already done — say so).
-- Has a real mechanism → add **L2 (how it works)**.
-- Has nuance, tradeoffs, gotchas, comparisons → add **L3**.
-- Has commands / code / worked examples → add **L4 (mostly pointers + links)**.
+Direction matters: **content first, structure second.** Never create pages and
+then work out how to link them — write, notice what needs more room, and only
+then spawn the deeper page for it. Decide per *section*, not per note:
+
+- Single clear idea / definition → leave it inline (a note can be one page — say so).
+- A section too heavy for its page → split it into its own page: a **sibling** at
+  the same level, or a **child** one level deeper — judge which fits.
+- Several sections sharing a theme → group them on one page.
+- A one-paragraph idea with no further depth in the source → keep it inline;
+  don't manufacture a stub page (that's inventing depth).
+
+L1 ≈ the gist; deeper pages hold mechanism, then tradeoffs, then implementation —
+but they **branch, they don't queue**. You are the judge of where to split; act,
+don't over-ask.
 
 Read `references/depth-ladder.md` for the level definitions and the
 complexity→depth heuristic. Draft the self-test set in this stage too — enough
@@ -95,8 +112,9 @@ Also propose RELATED cross-links and the PARENT link, and set metadata
 the content rules (capture the *why*, link don't copy, mark provenance,
 keep it atomic) and the anti-patterns to refuse.
 
-Output the developed note as markdown. Stop. *"Here's the developed note at
-L1–Lx — file it to Notion, or adjust depth?"*
+Output the developed note as markdown — show the page tree (fan-out and all),
+not just a linear outline. Stop. *"Here's the developed note — file it to Notion,
+or adjust depth/structure?"*
 
 ---
 
@@ -118,14 +136,16 @@ freshness format. Rune writes it; no config → ask the destination once, procee
 Place the approved note under the **right concept**, at the depth it reached.
 Before creating anything, search Notion for an existing note on the same concept:
 if one exists, **accrete onto it** rather than making a duplicate (one home per
-fact). The concept page holds L0+L1; each deeper level (L2/L3/L4) is a **child
-page**, created only once its material exists. No parent hub yet → bootstrap one
-(see filing ref), don't orphan the note. Add the PARENT back-mention and any
-RELATED cross-mentions as `<mention-page>` links.
+fact). The concept page holds L0+L1; every section that needs elaboration becomes
+its **own child page** — one parent can have *many*, and those branch further —
+created only once its material exists. It's a fanned-out tree, not a single
+L2→L3→L4 chain. No parent hub yet → bootstrap one (see filing ref), don't orphan
+the note. Add the PARENT back-mention and any RELATED cross-mentions as
+`<mention-page>` links.
 
 Read `references/notion-filing.md` for the placement logic (incl. the no-hub
-bootstrap), the Notion MCP operations, how L1–L4 map to **nested child pages**
-(depth = page nesting, not toggle headings), how to link with `<mention-page>`,
+bootstrap), the Notion MCP operations, how depth maps to **nested, fanned-out
+child pages** (depth = page nesting, not toggle headings), how to link with `<mention-page>`,
 and the maintenance-on-access step (bump `last touched`). Read the
 `notion://docs/enhanced-markdown-spec` resource before composing page content.
 
@@ -151,6 +171,8 @@ format survives any tool.
 - **Never auto-file.** Two human checkpoints, every time.
 - **Never transcribe the source.** Capture interpretation; link to the source.
 - **Never invent depth** the material doesn't support. Partial is complete.
+- **Content first, then structure.** Spawn a deeper page only when a section needs
+  it; depth fans out and recurses — never pre-build a page chain.
 - **Never duplicate a fact.** Search first; accrete onto the existing concept.
 - **Default shallow.** Effort scales with the user's interest, not with your urge
   to be thorough.
