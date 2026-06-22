@@ -18,6 +18,8 @@ You are a generic build-session orchestrator. You sequence five skills (task-man
 - One human gate only — plan approval (Step 3.6). All other gates are hard stops, not optional checkpoints.
 - Iteration cap = 3 for plan review AND build review. Hitting the cap is a hard stop, not a silent proceed.
 - Never auto-create follow-up tasks for findings that were resolved. Only create for findings that were deferred, were a recurring blocker, or surfaced an AC the build did not satisfy.
+- **All task/issue creation goes through the task-manager skill — never a raw `gh issue create` or direct backend write, not by the orchestrator and not by any sub-agent.** task-manager owns labels (priority/rune/source/status), the body template, the duplicate check, and the confirm-before-create gate; a raw create bypasses all of them and lands a malformed, unlabeled issue. If a sub-agent (e.g. sindri) discovers work mid-build, it REPORTS it in `discovered_followups` (see Step 4) — it does not file it. The single create path is Step 8.
+- **Mid-build code markers carry no minted issue number.** A `// TODO`/`// DUP`/`// FIXME` left in code must be self-describing (what + where + why), never a hand-minted `#N` or a bare `#TBD`. The number does not exist yet — Step 8 mints it via task-manager after the build closes. Forcing a number mid-build is what tempts a raw create; a descriptive marker satisfies "no bare #TBD ships" without one.
 - Never harvest decisions before the build is closed — inline marks accumulate across the whole session; harvest once at close.
 
 ---
@@ -235,9 +237,11 @@ Spawn a sub-agent with this brief:
 
 > Load skald. Run: `skald run sindri --scope {scope_slug}` in build mode. Skald will pass the approved planner-task.md body as the scope brief automatically. Sindri builds code + tests + runs its own quality gate per its SKILL.md.
 >
-> Return JSON: `{artifact_path, version, build_summary_first_paragraph, files_modified: [...], tests_added: [...], quality_gate_result, terminal_state}`. Do NOT return the full build body — files_modified is enough.
+> If you discover work that belongs in a separate ticket (a duplicated helper worth extracting, a latent bug out of scope, a missing test surface), do NOT create an issue and do NOT mint an issue number into a code comment. Leave a self-describing marker (`// DUP: <what> duplicated in <where>; extract to <target>` — no `#N`, no `#TBD`) and report it in `discovered_followups`.
+>
+> Return JSON: `{artifact_path, version, build_summary_first_paragraph, files_modified: [...], tests_added: [...], quality_gate_result, terminal_state, discovered_followups: [{title, context, acceptance_criteria, priority_hint, code_marker_location}]}`. Do NOT return the full build body — files_modified is enough.
 
-Parse. Hold `files_modified` + `tests_added` + `build_summary_first_paragraph` in conversation memory for Step 5 AC verification.
+Parse. Hold `files_modified` + `tests_added` + `build_summary_first_paragraph` in conversation memory for Step 5 AC verification. Accumulate `discovered_followups` across this step and every Step 4.5 iterate — Step 8 files them via task-manager.
 
 If `terminal_state == "Blocked — need input."` → Hard Stop 2. Present blocker.
 
@@ -272,11 +276,11 @@ Branch on `review_status`:
 
 Spawn a sub-agent with this brief:
 
-> Load skald. Run: `skald run sindri --scope {scope_slug}` in iterate mode. Skald passes the latest review-findings.md body as input. Sindri addresses each finding, fixes code + tests, runs quality gate.
+> Load skald. Run: `skald run sindri --scope {scope_slug}` in iterate mode. Skald passes the latest review-findings.md body as input. Sindri addresses each finding, fixes code + tests, runs quality gate. Same rule as build mode: discovered out-of-scope work is reported, never filed and never given a minted issue number in a comment.
 >
-> Return JSON: `{artifact_path, version, files_modified, tests_added, quality_gate_result, terminal_state}`.
+> Return JSON: `{artifact_path, version, files_modified, tests_added, quality_gate_result, terminal_state, discovered_followups: [{title, context, acceptance_criteria, priority_hint, code_marker_location}]}`.
 
-Refresh in-memory `files_modified` + `tests_added` from the latest iterate return. Skald archives prior implementation-build to `_history/`. Continue loop.
+Refresh in-memory `files_modified` + `tests_added` from the latest iterate return. Merge any `discovered_followups` into the accumulator for Step 8. Skald archives prior implementation-build to `_history/`. Continue loop.
 
 Log per round:
 ```
@@ -340,16 +344,21 @@ Create follow-ups for:
 1. Each flagged AC from Step 5 (one task per flagged AC).
 2. Each deferred blocking finding from build-review (only if user explicitly deferred during Hard Stop 4 or 5).
 3. Any `Tech Debt Sentinel` blocking finding from the final review round that sindri did not address (the reviewer's intent was "must fix" but the user accepted with debt).
+4. Each entry in the accumulated `discovered_followups` from Step 4 / Step 4.5 (the in-band channel for mid-build discoveries — this is why sindri never files them itself).
+
+This is the **only** issue-creation point in the pipeline, and it always runs through task-manager — never a raw `gh issue create`. Per project convention, confirm the proposed follow-up list with the user (titles + priority) before creating; task-manager's Create mode also runs its own duplicate check and applies the full label set.
 
 For each, spawn a sub-agent with:
 
-> Load the task-manager skill. Run **Create mode** with: title=`{title}`, priority=`{inferred — high if blocker, medium otherwise}`, context=`{1-2 sentences from the finding or AC}`, acceptance criteria=`{verbatim}`, source=`session`, related to parent task `{task_id}`.
+> Load the task-manager skill. Run **Create mode** with: title=`{title}`, priority=`{inferred — high if blocker, medium otherwise; else priority_hint}`, context=`{1-2 sentences from the finding, AC, or discovery}`, acceptance criteria=`{verbatim}`, source=`{session for AC/findings; discovery for discovered_followups}`, related to parent task `{task_id}`. Run the duplicate check first.
 >
 > Return JSON: `{task_id, title}`.
 
+**Backfill code markers:** if any created follow-up has a `code_marker_location`, the self-describing marker sindri left now has a real issue number. Spawn one final `skald run sindri` iterate with the `{location → #N}` map so it appends the number to each marker (e.g. `// DUP: ... (tracked: #N)`). This is the only point a real issue number enters the code — after it exists. Skip if no markers need backfill.
+
 Skip Step 8 entirely if no follow-ups apply. Do NOT manufacture work.
 
-Log: `[STEP 8] Created {N} follow-up tasks: {list}.`
+Log: `[STEP 8] Created {N} follow-up tasks: {list}. Backfilled {M} code markers.`
 
 ---
 
@@ -392,13 +401,15 @@ You are a single-skill runner for the build-session orchestrator. You will:
    ```
    {natural-language request matching the skill's trigger style}
    ```
-2. Wait for the skill to complete. If the skill spawns its own sub-skills (e.g., skald spawning mimir), that is internal — you just wait.
-3. Return ONLY this JSON object — no commentary, no prose:
+2. Wait for the skill to complete. If the skill runs its own producer skill in-context (e.g., skald running mimir), that is internal — you just wait. Do NOT emit your JSON the moment the producer's prose appears; the skill is not done until it has persisted.
+3. **Confirm persistence landed (mandatory — do this BEFORE writing any JSON).** For any `skald run ...` step, the run is only complete when the canonical handoff file is on disk. Verify it directly: `ls .claude/handoff/{scope_slug}/` (or `Read` the expected canonical file). The JSON's `artifact_path` and `version` MUST come from the file you just confirmed on disk — never from the skald naming convention, never guessed. If the canonical file is absent (skald's Write phase was skipped), the persistence did NOT happen: re-invoke skald to complete its persist phase, re-check, and only then proceed. If it is still absent after a retry, return `terminal_state: "persist_failed"` with the path you expected — do not fabricate a success payload.
+4. Return ONLY this JSON object — no commentary, no prose:
    ```json
    {schema given by the step}
    ```
 
 Constraints:
+- Complete ALL of the skill's persistence steps (canonical file on disk + indices updated) BEFORE emitting the JSON. The JSON is your final output, not a shortcut past the Write.
 - Do not try to interpret or summarize the skill's output beyond what the schema asks.
 - If the skill terminates with `Blocked — need input.` or similar, return the terminal state verbatim in the JSON `terminal_state` field with empty other fields.
 - Do not modify files outside what the skill itself writes.

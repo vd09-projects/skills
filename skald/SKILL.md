@@ -135,7 +135,7 @@ If user did NOT pass `--scope`: defer slug resolution until after the skill runs
    - **Scope brief** if there is a pre-existing approved artifact in the scope dir that the target skill would naturally consume. Example: invoking sindri on scope X — skald reads `.claude/handoff/X/planner-task.md`, checks `status: approved`, includes its body as the scope brief. The target skill does not parse handoff frontmatter — skald passes the body content directly.
    - Any other args the user passed.
 
-2. Invoke the skill as a subagent (or in-context if skald is running as main agent).
+2. Invoke the skill **in-context** (run it directly in skald's own context via the `Skill` tool) whenever skald is itself running inside a sub-agent — which is the case any time an orchestrator agent invoked skald via the `Skill` tool rather than as the top-level/main agent. Spawn the producer as a *separate* sub-agent ONLY when skald is the top-level/main agent driving the session directly. Rationale: when skald is already one level down (orchestrator → sub-agent → skald), spawning the producer as a further sub-sub-agent adds a third nesting level. The producer's markdown then returns to skald, but the deeper the nesting the more likely the host agent short-circuits skald's Phase 4–7 persistence (it has enough to emit its own return payload and stops before the Write). Running the producer in-context keeps capture **and** the Write in the same context, so persistence cannot be skipped. Default to in-context; only fan out to a sub-agent when skald is genuinely the outermost agent.
 
 3. Capture the skill's markdown output. Output is plain markdown — no YAML frontmatter expected.
 
