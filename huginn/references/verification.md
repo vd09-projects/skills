@@ -55,7 +55,12 @@ it as volatile.
 ## Step 2 — Verify each claim in a fresh, blind context
 
 For each load-bearing claim, spawn a **verifier sub-agent that does NOT see the
-draft, the opinion, or huginn's reasoning** — only the bare claim. Independence is
+draft, the opinion, or huginn's reasoning** — only the bare claim. If a
+`claim-verifier` agent type is installed, use it — it is tool-sandboxed (read + web +
+temp-only Bash, no Write/Edit, no nested agents) so it *structurally* cannot see or
+edit the draft, and it bakes the existence-vs-support / quote-pin / refutation-first
+protocol below into its prompt. Otherwise spawn a generic blind sub-agent.
+Independence is
 load-bearing: a verifier shown the original claim anchors on it and rubber-stamps.
 Give the verifier:
 

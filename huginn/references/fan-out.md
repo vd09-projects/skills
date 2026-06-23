@@ -20,6 +20,11 @@ report here — it gathers graded findings for Stage 2.
 - Budget the parallelism. 3–5 sub-agents is typical; more adds coordination cost
   and duplication. If two sub-questions overlap, merge them before launching.
 
+**Preferred worker.** If a `research-scout` agent type is installed, fan out to it —
+it bakes the grounding / authority-ranking / version-pinning / no-fabrication contract
+below into a tool-sandboxed (read + web, no Write, no nested agents) worker. If it is
+not installed, spawn a generic sub-agent with the brief below.
+
 ## The sub-agent brief (give each one this)
 
 Each research sub-agent must be told, explicitly:
