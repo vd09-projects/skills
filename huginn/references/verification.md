@@ -76,11 +76,43 @@ Give the verifier:
    *pinned* version, not a different one. "True in v18, false in v19" is a fail if
    the report implies the current version.
 5. **Execute** (code claims) — run it where feasible. A passing test beats any
-   cited doc. The strongest external signal available.
+   cited doc. The strongest external signal available. See Step 2.5 — for an
+   empirically testable claim, don't wait for runnable code to exist: **write a
+   probe and run it.**
 
 For **derived/quantitative conclusions** (math, multi-step inference), also run a
 **self-consistency** check: sample the derivation a few times in independent
 contexts and require agreement — disagreement means the conclusion is unstable.
+
+## Step 2.5 — Verification spike (write a probe to settle a claim)
+
+For a load-bearing claim that is **empirically testable** — "does X actually
+support Y", "does this compile/run under the pinned version", "can Y talk to X" —
+the strongest signal isn't another doc, it's **running code huginn writes itself**.
+Don't wait for a runnable artifact to exist; manufacture the evidence. This is a
+verification path, not implementation — the **research skill writes code only to
+verify, never to build a feature.**
+
+- **Trigger** — the claim is testable AND a probe settles it cheaper or harder
+  than docs. Concentrated in FEASIBILITY ("does the seam between Y and X hold")
+  and version-sensitive behavior claims.
+- **Scope** — minimal, throwaway, single claim. One file, one behavior, no
+  scaffolding. If the probe grows past roughly a screenful, it's the wrong tool —
+  stop and settle the claim by docs instead. A probe is never a step toward the
+  MVP/spike plan (that's a *plan* the report may carry; this is *code huginn runs
+  now*).
+- **Isolated** — build and run it in a temp dir / sandbox, **outside the repo's
+  real source**. Park the artifact under `<output_dir>/<slug>/_history/probes/`
+  for the audit trail, or discard it — never leave it as live code in the project.
+- **Result is evidence:**
+  - **Passes** → grade the claim `verified` (execution-backed — the strongest
+    grade; record what ran and the observed output as the support span).
+  - **Fails** → the claim is **killed**; the failure is itself a finding that
+    reshapes the recommendation (loop back per Step 5).
+  - **Inconclusive / can't isolate** → say so and fall back to doc verification;
+    don't dress a flaky probe up as proof.
+- **State the bound loud** — label it "probe to settle claim N, not an
+  implementation", so the no-full-build line never blurs.
 
 ## Step 3 — Handle numbers and benchmarks with extra suspicion
 
@@ -100,7 +132,7 @@ self-reported confidence number:
 
 | Grade | Meaning | Action |
 |---|---|---|
-| `verified` | A primary/authoritative source entails it, quote-pinned, version-correct | Keep; cite with the pinned source + quoted span |
+| `verified` | A primary/authoritative source entails it, quote-pinned, version-correct — **or a verification probe (Step 2.5) ran and passed** | Keep; cite with the pinned source + quoted span, or the probe + its observed output |
 | `single-source` | Only one source supports it; not independently corroborated | Keep, but flag the thin support |
 | `contested` | Authoritative sources disagree | Keep BOTH, attribute each, name the axis of disagreement — never average |
 | `unsupported` | No source entails it / no quotable span / citation doesn't support | **Cut or downgrade** the claim; the recommendation must not rest on it |

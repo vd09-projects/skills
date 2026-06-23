@@ -187,7 +187,11 @@ a model re-reading itself reliably makes answers worse. So:
 - **Grade or kill** each claim: `verified` (primary source, quote-pinned) ·
   `single-source` · `contested` (sources disagree — list them) · `unsupported`
   (downgrade or cut) · `model-only` (no retrieval — flag loudly). Code claims:
-  **execute** where feasible — a passing test beats any cited doc.
+  **execute** where feasible — a passing test beats any cited doc. For an
+  empirically testable claim, **write a minimal throwaway probe and run it**
+  (verification spike) rather than waiting for runnable code to exist — a passing
+  probe grades `verified`, a failing one kills the claim. Probe to verify, never
+  to build a feature.
 
 Verification feeds back into the opinion: unsupported claims are cut or
 downgraded, the recommendation adjusts. If verification breaks the core of the
