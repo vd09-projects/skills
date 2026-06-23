@@ -17,11 +17,13 @@ _history/report-vN.md — never overwrite.
 
 ## Recommendation
 {2–4 sentences. Lead with the answer. State what would change it.}
+<!-- If the pick differs from a soft preference stated in framing, say so:
+     "you leaned X; we recommend Y because …" — never a silent swap. -->
 
 ## Frame
 | | |
 |---|---|
-| **Knowns (X)** | {what's given/fixed} |
+| **Knowns (X)** | {given/fixed — tag each [hard constraint] or [soft preference]} |
 | **Unknowns (Y)** | {what had to be resolved} |
 | **Assumptions** | {taken as true, would flip the answer if wrong} |
 <!-- FEASIBILITY: add an interaction map — how Y connects to X and A, what breaks at the seams. -->

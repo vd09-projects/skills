@@ -26,9 +26,16 @@ The intent class from Stage 0 sets the body shape:
 
 ## Standard sections (all intents)
 
-1. **Recommendation** — the answer, 2–4 sentences. Lead with it.
-2. **Frame** — the KNOWNS / UNKNOWNS / ASSUMPTIONS table from Stage 0 (so the
-   reader sees what the answer rests on, and which assumptions would flip it).
+1. **Recommendation** — the answer, 2–4 sentences. Lead with it. **If the pick
+   differs from a soft preference the user stated in framing, say so explicitly**
+   — "you leaned X; we recommend Y because …" — with the deciding reason. Never
+   swap their leaning out silently; an unflagged override reads as if they were
+   never heard. (A hard constraint is never overridden — if the research points
+   past one, surface it as a flagged tension, not a quiet swap.)
+2. **Frame** — the KNOWNS / UNKNOWNS / ASSUMPTIONS table from Stage 0, each KNOWN
+   tagged **[hard constraint]** or **[soft preference]** (so the reader sees what
+   the answer rests on, which assumptions would flip it, and which leanings were
+   open to challenge).
 3. **The reasoning** — intent-shaped body (table above). This is where the
    evidence-graded claims live.
 4. **Evidence & claims** — every **load-bearing claim** with its grade, citation,
