@@ -260,6 +260,18 @@ If not exists: new version = 1, `prior_versions: []`.
 
 Write the frontmatter + body to `.claude/handoff/{slug}/{canonical}.md`.
 
+On an iteration, Steps 2–5 are ONE indivisible unit — archive the prior version to `_history/`, bump the version, AND write the new canonical. Never stop after the archive (that would leave the canonical missing or stale). If anything interrupts between archive and write, the iteration is incomplete and must be redone, not reported as done.
+
+### Step 5b — Read-back self-verify (mandatory)
+
+Immediately re-read the canonical file just written and confirm it matches what Step 5 intended:
+
+- The `version` field equals the computed `new_version` (Step 3) — NOT the pre-iteration value.
+- On an iteration, `_history/{canonical}-v{N}.md` (the archived prior) now exists.
+- `updated` is the timestamp set this run.
+
+If the read-back does not match (file unchanged, version not bumped, no archive), the Write did not land — redo Steps 2–5. Do NOT proceed to Steps 6–9 or emit the `Persisted.` terminal until the read-back confirms. A producer whose body was captured but never written to disk is a FAILED persist, not a success — report it as such rather than reporting the stale prior version.
+
 ### Step 6 — Update `_thread.md`
 
 Append entry:
@@ -317,7 +329,8 @@ Latest-updated artifact wins for Status display. Tie-breaking: review > implemen
 
 | State | Meaning |
 |---|---|
-| `Persisted.` | Target skill ran, output captured, classified, wrapped, written, indices updated. Reports path + version. |
+| `Persisted.` | Target skill ran, output captured, classified, wrapped, written, indices updated, AND the Step 5b read-back confirmed the canonical on disk carries the new version. Reports path + version. |
+| `Persist failed.` | Output captured but the canonical write did not land (Step 5b read-back showed the file absent or still at the prior version — e.g. an iteration whose archive+write was interrupted). Skald reports the path + the stale-vs-expected version. Never reports the prior version as if it were the new one. |
 | `Classification needed.` | Output title doesn't match any known pattern AND skill registry can't disambiguate. Skald held output in memory until user resolves. Does NOT persist until resolved. |
 | `Slug unresolved.` | User cancelled at slug confirmation. Does NOT invoke or persist. |
 | `Target skill error.` | Target returned `Blocked` or other non-output terminal. Skald reports the target's state. No persistence. |

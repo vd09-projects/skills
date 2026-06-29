@@ -200,9 +200,9 @@ Spawn a sub-agent with this brief:
 > Acknowledge each, revise, note any you disagree with and why.
 > ```
 >
-> Return same JSON shape as Step 3.
+> Return same JSON shape as Step 3. This is an ITERATION: the persisted result MUST be a NEW version (planner-task `version` ≥ {round}+1) with the prior body archived under `_history/planner-task-v{round}.md`. Apply APPENDIX A step 3 freshness verification — if the canonical still reads the pre-revision version after skald returns, the revision write was skipped; re-invoke skald and re-check before reporting, and return `persist_failed` rather than the stale version if it does not advance.
 
-Skald automatically archives prior version to `_history/`. Continue loop.
+Skald archives the prior version to `_history/` and writes the new one. Continue loop.
 
 Log per round:
 ```
@@ -402,7 +402,13 @@ You are a single-skill runner for the build-session orchestrator. You will:
    {natural-language request matching the skill's trigger style}
    ```
 2. Wait for the skill to complete. If the skill runs its own producer skill in-context (e.g., skald running mimir), that is internal — you just wait. Do NOT emit your JSON the moment the producer's prose appears; the skill is not done until it has persisted.
-3. **Confirm persistence landed (mandatory — do this BEFORE writing any JSON).** For any `skald run ...` step, the run is only complete when the canonical handoff file is on disk. Verify it directly: `ls .claude/handoff/{scope_slug}/` (or `Read` the expected canonical file). The JSON's `artifact_path` and `version` MUST come from the file you just confirmed on disk — never from the skald naming convention, never guessed. If the canonical file is absent (skald's Write phase was skipped), the persistence did NOT happen: re-invoke skald to complete its persist phase, re-check, and only then proceed. If it is still absent after a retry, return `terminal_state: "persist_failed"` with the path you expected — do not fabricate a success payload.
+3. **Confirm persistence landed (mandatory — do this BEFORE writing any JSON).** For any `skald run ...` step, the run is only complete when the canonical handoff file is on disk AND fresh. Existence alone is NOT proof: on an iteration (plan revision, sindri iterate) the prior version's canonical file is already on disk, so a bare `ls` succeeds even when skald skipped the new write entirely — the silent-stale failure. Verify FRESHNESS, not just presence:
+   - **Before invoking skald**, record the canonical's current `version` field (or `absent` if the file does not yet exist). Read it from `.claude/handoff/{scope_slug}/{canonical}.md` frontmatter.
+   - **After skald returns**, read the canonical again. A genuine persist means one of:
+     - First write: file went from `absent` → exists with `version: 1`.
+     - Iteration: `version` strictly increased (N → N+1) **AND** the prior version now exists at `_history/{canonical}-v{N}.md` **AND** the `updated` timestamp advanced.
+   - The JSON's `artifact_path` and `version` MUST come from this post-run read — never from the skald naming convention, never guessed, never carried over from the pre-run value.
+   - If freshness is NOT satisfied (file absent, or version unchanged, or no new `_history/` archive on an iteration), skald's Write phase was skipped: re-invoke skald to complete its persist phase, re-check freshness, and only then proceed. If still stale after one retry, return `terminal_state: "persist_failed"` with the canonical path plus the stale-vs-expected version — do NOT fabricate a success payload and do NOT return the stale version as if it were new.
 4. Return ONLY this JSON object — no commentary, no prose:
    ```json
    {schema given by the step}
@@ -410,6 +416,7 @@ You are a single-skill runner for the build-session orchestrator. You will:
 
 Constraints:
 - Complete ALL of the skill's persistence steps (canonical file on disk + indices updated) BEFORE emitting the JSON. The JSON is your final output, not a shortcut past the Write.
+- On an iteration, "persisted" means the version advanced and the prior version was archived — confirm both per step 3 before reporting success. A canonical that still reads the pre-run version is a skipped write, not a success.
 - Do not try to interpret or summarize the skill's output beyond what the schema asks.
 - If the skill terminates with `Blocked — need input.` or similar, return the terminal state verbatim in the JSON `terminal_state` field with empty other fields.
 - Do not modify files outside what the skill itself writes.
